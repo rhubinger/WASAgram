@@ -2,216 +2,648 @@ openapi: 3.0.0
 servers:
   - url: "http://localhost:3000"
 info:
-  title: WASA Homework enroll
+  title: WASAgram
   description: |-
-    The application is collecting students information (student ID, name, repository URL) and it is providing an SSH key
-    that the student should configure in their repository.
+    This API is for the WASAgram Webapp. 
   version: 1.0.0
 tags:
-  - name: Enrollment
-  - name: Results
+  - name: Login
+  - name: User
+  - name: Fotos
+  - name: Image
 paths:
-  /enroll/:
+  /login:
     post:
-      tags: ["Enrollment"]
-      operationId: enrollStudent
-      summary: Enroll a new student in the system, and provides the public key.
-      description: |-
-        This endpoint receives the information about the student to enroll, generates a new SSH key pair and return the
-        public key.
-        If the user is already enrolled, this method returns an error.
+      tags: ["Login"]
+      summary: Logs in the user
+      description: |
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
       requestBody:
+        description: User details
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudentEnrollRequest"
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Alan Turing"
+                  pattern: 'ˆ.*?$'
+                  minLength: 3
+                  maxLength: 16
+        required: true
       responses:
-        "202":
-          description: Student enrolled successfully, public key returned
+        "201":
+          description: User log-in action successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StudentEnrollResult"
-        "409":
-          description: The user is already enrolled, cannot proceed
+                type: object
+                properties:
+                  identifier:
+                    type: string
+                    example: "qlzf1964sdlk"
         "400": { $ref: "#/components/responses/BadRequest" }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
-  /results/:
+  /user/{uid}/username:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    post:
+      tags: ["User"]
+      summary: Change the username
+      description: |
+        Change the username of a user. Only the user itself can change his username.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: New username
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Alan Turing"
+                  pattern: "ˆ.*?$"
+                  minLength: 3
+                  maxLength: 16
+        required: true
+      responses:
+        "200": { description: Username changed successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /user/{uid}/followed:
+    parameters:
+      - $ref: "#/components/parameters/userId"
     get:
-      tags: [ "Results" ]
-      operationId: listResults
-      summary: Return the list of all students with their results
-      description: |-
-        Return a list of result object.
-        Objects contain the result of the homework validation for each student.
+      tags: ["User"]
+      summary: Get all users which the user follows
+      description: |
+        Obtain all accounts and their ids the user follows.
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          description: List retrieved successfully
+          description: |
+            An array of usernames and their ids.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResultList"
+                $ref: "#/components/schemas/userlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /results/{studentId}/git:
+                  
+  /user/{uid}/followers:
     parameters:
-      - $ref: '#/components/parameters/StudentID'
+      - $ref: "#/components/parameters/userId"
     get:
-      tags: [ "Results" ]
-      operationId: getGitLog
-      summary: Return the log for Git actions
-      description: |-
-        Return the output of Git commands that were used to clone the repository.
+      tags: ["User"]
+      summary: Get all users which follow the user
+      description: |
+        Obtain all users and their ids which follow the user
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          description: Git log
+          description: |
+            An array of usernames which follow the user.
           content:
-            text/plain: {}
-        "404": { $ref: "#/components/responses/ResultNotFound" }
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /results/{studentId}/openapi:
+                  
+  /user/{uid}/followers/{fid}:
     parameters:
-      - $ref: '#/components/parameters/StudentID'
+      - $ref: "#/components/parameters/userId"
+      - $ref: "#/components/parameters/followerId"
+    put:
+      tags: ["User"]
+      summary: Follow a user
+      description: |
+        Follow another user.
+        The userId specifies the followed user,
+        the followerId specifies the user which wants to follow the other user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Followed user successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: No user found}
+        "500": { $ref: "#/components/responses/InternalServerError" }
+    delete:
+      tags: ["User"]
+      summary: Unfollow a user
+      description: |
+        Unfollow another user.
+        The userId specifies the followed user,
+        the followerId specifies the user which wants to follow the other user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Unfollowed user successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /user/{uid}/banned/{bid}:
+    parameters:
+    - $ref: "#/components/parameters/userId"
+    - $ref: "#/components/parameters/bannedId"
+    put:
+      tags: ["User"]
+      summary: Ban a user
+      description: |
+        Ban another user.
+        The userId specifies the the banning user, 
+        the bannedId specifies the user which gets banned.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Banned user successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+    delete:
+      tags: ["User"]
+      summary: Unban a user
+      description: |
+        Unban another user.
+        The userId specifies the the banning user, 
+        the bannedId specifies the user which gets unbanned.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Unbanned user successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /user/{uid}/banned:
+    parameters:
+      - $ref: "#/components/parameters/userId"
     get:
-      tags: [ "Results" ]
-      operationId: getOpenAPILog
-      summary: Return the reason for OpenAPI score
-      description: |-
-        Return a descriptive text for the OpenAPI score.
+      tags: ["User"]
+      summary: Get all users which a user banned
+      description: |
+        Obtain all users which got banned by a user.
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          description: OpenAPI score log
+          description: |
+            An array of usernames and their ids.
           content:
-            text/plain: {}
-        "404": { $ref: "#/components/responses/ResultNotFound" }
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+                  
+  /user/{uid}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["User"]
+      summary: Get a users profile data
+      description: |
+        Obtain the userdata and a list of fotos from the specified user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Userdata and an array of fotos posted by the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/profile"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /user/{uid}/stream:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["User"]
+      summary: Get the stream of a user
+      description: |
+        Obtain all posts made by accounts which the user follows
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            An array of fotos which were posted by the users followed accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/stream"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
+  /posts:
+    post:
+      tags: ["Fotos"]
+      summary: Create a new post
+      description: |
+        Post a foto with caption to a users account. 
+        The posted foto will then appear on the profile of the user and in the streams of his followers.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: New foto
+        content:
+          multipart/form-data:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/post"
+                - type: object
+                  properties:
+                    image:
+                      type: string
+                      format: binary
+        required: true
+      responses:
+        "200": { description: Post created successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+
+  /posts/{pid}:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    get:
+      tags: ["Fotos"]
+      summary: Get a Foto
+      description: |
+        Get the foto with id fid.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            The posts metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/post"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+        
+    delete:
+      tags: ["Fotos"]
+      summary: Delete a Post
+      description: |
+        Remove a post from a users account. 
+        The postId specifies the post.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Post deleted successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /posts/{pid}/likes:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    get:
+      tags: ["Fotos"]
+      summary: Get the users that liked a foto
+      description: |
+        Get the users and their ids which liked the foto.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            TODO
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/userlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+                  
+  /posts/{pid}/likes/{lid}:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+      - $ref: "#/components/parameters/likeId"
+    put:
+      tags: ["Fotos"]
+      summary: Like a Foto
+      description: |
+        Like a post from another users account. 
+        The postId specifies the post from the users account, the likeId is the userId of the liking user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Post liked successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Resource not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+    delete:
+      tags: ["Fotos"]
+      summary: Unlike a Foto
+      description: |
+        Remove a like from another users foto. 
+        The postId specifies the foto from the users account, the likeId is the userId of the unliking user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Post unliked successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Resource not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+
+  /posts/{pid}/comments:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    post:
+      tags: ["Fotos"]
+      summary: Comment a post
+      description: |
+        Comment a post from another users account. 
+        The postId specifies the post.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: User details
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/comment"
+      responses:
+        "200": { description: Comment created successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+    get:
+      tags: ["Fotos"]
+      summary: Get the commments of a foto
+      description: |
+        Get the comments of a foto
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            The foto with id fid as well as its metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/commentlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+
+  /posts/{pid}/comments/{cid}:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+      - $ref: "#/components/parameters/commentId"
+    delete:
+      tags: ["Fotos"]
+      summary: Uncomment a Foto
+      description: |
+        Delete a previously made comment on a foto from another users account. 
+        The postId specifies the post, the commentId specifies the id of the comment.
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: Comment delted successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Resource not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+
+  /image/{pid}/:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    get:
+      tags: ["Image"]
+      summary: Get the image of a Post
+      description: |
+        Get the image of the post with the post id pid.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            The foto with id fid as well as its metadata
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: Image not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+                  
 components:
-  schemas:
-    StudentEnrollRequest:
-      title: Student enroll form data
-      description: |-
-        Student enroll request.
-        It contains all necessary data to enroll the student in the system for homework evaluation.
-      type: object
-      properties:
-        studentID:
-          $ref: '#/components/schemas/StudentID'
-        firstName:
-          description: Student first name
-          type: string
-          pattern: ^.*?$
-          minLength: 2
-          maxLength: 32
-          example: John
-        lastName:
-          description: Student last name / family name
-          type: string
-          pattern: ^.*?$
-          minLength: 2
-          maxLength: 32
-          example: Doe
-        email:
-          description: Student institutional e-mail address
-          type: string
-          format: email
-          pattern: "@studenti\\.uniroma1\\.it$"
-          minLength: 25
-          maxLength: 70
-          example: doe.1234567@studenti.uniroma1.it
-        repoURL:
-          description: URL of the Git repository with all homeworks
-          type: string
-          pattern: "^(ssh://)?git@.*"
-          minLength: 5
-          maxLength: 200
-          example: git@github.com:yourname/yourrepo.git
-
-    StudentEnrollResult:
-      title: Student enroll response
-      description: The response contains the SSH used for accessing the Git repository.
-      type: object
-      properties:
-        publicKey:
-          description: SSH public key (used as Deploy Key in SSH repos)
-          type: string
-          minLength: 20
-          maxLength: 200
-          example: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ1pP7eWBFEMmf494e10G2242GoWB/pz6g3MO62Twpgy"
-
-    ResultList:
-      title: List of homework results
-      description: |-
-        Contains a list of homework results, one per student.
-        Each results contains the score for all homeworks, plus some additional information.
-      type: array
-      minItems: 0
-      maxItems: 300
-      items:
-        type: object
-        properties:
-          studentID:
-            $ref: '#/components/schemas/StudentID'
-          hash:
-            description: Git commit hash
-            type: string
-            example: abcdef012345
-            pattern: ^[a-fA-F0-9]+$
-            maxLength: 50
-            minLength: 5
-          openapi:
-            description: Score of the OpenAPI part (1st homework)
-            type: integer
-            minimum: 0
-            maximum: 30
-            example: 18
-          go:
-            description: Score of the Go part (2nd homework)
-            type: integer
-            minimum: 0
-            maximum: 30
-            example: 18
-          vue:
-            description: Score of the Vue.js part (3rd homework)
-            type: integer
-            minimum: 0
-            maximum: 30
-            example: 18
-          docker:
-            description: Score of the docker part (4th homework)
-            type: integer
-            minimum: 0
-            maximum: 30
-            example: 18
-          lastcheck:
-            description: Last time the homework was checked
-            type: string
-            format: date-time
-            example: 2020-01-03T16:12:58Z
-            pattern: ^[0-9:A-Z-]*$
-
-    StudentID:
-      description: Student identifier (matricola)
-      type: integer
-      minimum: 1
-      maximum: 9999999
-      example: 1234567
-
   parameters:
-    StudentID:
+    userId:
+      schema:
+        type: string
+        example: "qlzf1964sdlk"
+        readOnly: true
+      name: uid
       in: path
       required: true
-      description: Student identifier (matricola)
-      name: studentId
+      description: The user id (uid) is an integer, that uniquely identifies a user.
+    followerId:
       schema:
-        $ref: '#/components/schemas/StudentID'
-
+        type: string
+        example: "qlfj5037flng"
+        readOnly: true
+      name: fid
+      in: path
+      required: true
+      description: The follower id (fid) is the user id (uid) of the follower.
+    bannedId:
+      schema:
+        type: string
+        example: "eolg4078rngk"
+        readOnly: true
+      name: bid
+      in: path
+      required: true
+      description: The banned id (bid) is the user id (uid) of the banned user.
+    postId:
+      schema:
+        type: string
+        example: "qlvh1857rovh"
+        readOnly: true
+      name: pid
+      in: path
+      required: true
+      description: The post id (fid) is an integer, that uniquely identifies a post.
+    likeId:
+      schema:
+        type: string
+        example: "dpvk1047dovl"
+        readOnly: true
+      name: lid
+      in: path
+      required: true
+      description: The like id (lid) is the user id (uid) of the user that liked the post.
+    commentId:
+      schema:
+        type: string
+        example: "dpvk2047fpwv"
+        readOnly: true
+      name: cid
+      in: path
+      required: true
+      description: The comment id (cid) is an integer, thath uniquely identifies a comment.
+        
+  schemas:
+    user:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "dltk4078glfj"
+        name:
+          type: string
+          example: "KonradZuse"
+        followers:
+          type: integer
+          example: 15400
+          minimum: 0
+        followed:
+          type: integer
+          example: 530
+          minimum: 0
+    stream:
+      type: array
+      items: 
+        $ref: "#/components/schemas/post"    
+    profile:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/user"
+        posts:
+          type: array
+          items: 
+            $ref: "#/components/schemas/post"
+    post:
+      type: object
+      properties:
+        poster:
+          $ref: "#/components/schemas/user"
+        date-time:
+          type: string
+          format: date-time
+        caption:
+          type: string
+          example: "Nice day at the beach."
+          minLength: 1
+          maxLength: 140
+        likes:
+          type: integer
+          example: 14
+          minimum: 0
+        comments:
+          type: integer
+          example: 3
+          minimum: 0
+    userlist:
+      type: object
+      properties:
+        length:
+          type: integer
+          example: 8
+          minimum: 1
+        list:
+          type: array
+          items:
+            $ref: "#/components/schemas/user"
+    comment:
+      type: object
+      properties:
+        poster:
+          $ref: "#/components/schemas/user"
+        fotoId:
+          type: string
+          example: "qlzf1964sdlk"
+        date-time:
+          type: string
+          format: date-time
+        comment:
+          type: string
+          example: "Looks nice!"
+          minLength: 1
+          maxLength: 140
+          
+    commentlist:
+      type: object
+      properties:
+        length:
+          type: integer
+          example: 3
+          minimum: 1
+        list:
+          type: array
+          items:
+            $ref: "#/components/schemas/comment"
+        
   responses:
-    ResultNotFound:
-      description: The requested result has not been found.
     BadRequest:
-      description: The request was not compliant with the documentation (eg. missing fields, etc)
+      description: |-
+        The request was not compliant with the documentation
+        (eg. missing fields, etc).
+    UnauthorizedRequest:
+      description: |-
+        The requesting party was not authorized to access the resource.
     InternalServerError:
-      description: The server encountered an internal error. Further info in server logs
+      description: |-
+        The server encountered an internal error.
+        Further info in server logs. 
+        comment:
+          type: string
+          
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
