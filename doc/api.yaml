@@ -10,9 +10,9 @@ tags:
   - name: Login
   - name: User
   - name: Fotos
-  - name: Image
+  - name: Picture
 paths:
-  /login:
+  /session:
     post:
       tags: ["Login"]
       summary: Logs in the user
@@ -52,11 +52,12 @@ paths:
   /user/{uid}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
-    post:
+    put:
       tags: ["User"]
       summary: Change the username
       description: |
-        Change the username of a user. Only the user itself can change his username.
+        Change the username of a user. 
+        Only the user itself can change his username. 
       security:
         - bearerAuth: []
       requestBody:
@@ -85,15 +86,16 @@ paths:
       - $ref: "#/components/parameters/userId"
     get:
       tags: ["User"]
-      summary: Get all users which the user follows
+      summary: Get all accounts which are followed by a user
       description: |
-        Obtain all accounts and their ids the user follows.
+        Get a list of all users which the user with userId uid follows.
+        Returns a list of user objects and the number of followed users.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            An array of usernames and their ids.
+            An array of followed users and the number of followed users.
           content:
             application/json:
               schema:
@@ -108,15 +110,16 @@ paths:
       - $ref: "#/components/parameters/userId"
     get:
       tags: ["User"]
-      summary: Get all users which follow the user
+      summary: Get all accounts which follow a user
       description: |
-        Obtain all users and their ids which follow the user
+        Get a list of all users which follow the user with userId uid.
+        Returns a list of user objects and the number of followers.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            An array of usernames which follow the user.
+            An array of following users and the number of following users.
           content:
             application/json:
               schema:
@@ -130,13 +133,13 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/followerId"
-    put:
+    post:
       tags: ["User"]
       summary: Follow a user
       description: |
         Follow another user.
-        The userId specifies the followed user,
-        the followerId specifies the user which wants to follow the other user.
+        The userId (uid) specifies the followed user,
+        the followerId (fid) specifies the userId of the user which wants to follow the other user.
       security:
         - bearerAuth: []
       responses:
@@ -150,8 +153,8 @@ paths:
       summary: Unfollow a user
       description: |
         Unfollow another user.
-        The userId specifies the followed user,
-        the followerId specifies the user which wants to follow the other user.
+        The userId (uid) specifies the followed user,
+        the followerId (fid) specifies the userId of the user which wants to unfollow the other user.
       security:
         - bearerAuth: []
       responses:
@@ -165,13 +168,13 @@ paths:
     parameters:
     - $ref: "#/components/parameters/userId"
     - $ref: "#/components/parameters/bannedId"
-    put:
+    post:
       tags: ["User"]
       summary: Ban a user
       description: |
         Ban another user.
-        The userId specifies the the banning user, 
-        the bannedId specifies the user which gets banned.
+        The userId (uid) specifies the the banning user, 
+        the bannedId (bid) specifies the userId of the user which gets banned.
       security:
         - bearerAuth: []
       responses:
@@ -185,8 +188,8 @@ paths:
       summary: Unban a user
       description: |
         Unban another user.
-        The userId specifies the the banning user, 
-        the bannedId specifies the user which gets unbanned.
+        The userId (uid) specifies the the banning user, 
+        the bannedId (bid) specifies the userId of the user which gets unbanned.
       security:
         - bearerAuth: []
       responses:
@@ -203,13 +206,14 @@ paths:
       tags: ["User"]
       summary: Get all users which a user banned
       description: |
-        Obtain all users which got banned by a user.
+        Get a list of all users which are banned by the user userId uid.
+        Returns a list of user objects and the number of banned users.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            An array of usernames and their ids.
+            An array of banned users and the number of banned users.
           content:
             application/json:
               schema:
@@ -226,13 +230,13 @@ paths:
       tags: ["User"]
       summary: Get a users profile data
       description: |
-        Obtain the userdata and a list of fotos from the specified user
+        Obtain the userinformation (name, ...) and posts (in reversec chronological order) of the user with userId uid.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            Userdata and an array of fotos posted by the user
+            The userinformation and a list of posts
           content:
             application/json:
               schema:
@@ -249,13 +253,13 @@ paths:
       tags: ["User"]
       summary: Get the stream of a user
       description: |
-        Obtain all posts made by accounts which the user follows
+        Obtain the posts made by accounts which the user with userId uid follows in reverse chronological order.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            An array of fotos which were posted by the users followed accounts
+            A list of posts in reverse chronological order
           content:
             application/json:
               schema:
@@ -266,7 +270,7 @@ paths:
         "500": { $ref: "#/components/responses/InternalServerError" }
 
   /posts:
-    post:
+    put:
       tags: ["Fotos"]
       summary: Create a new post
       description: |
@@ -275,7 +279,7 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-        description: New foto
+        description: "New post with image"
         content:
           multipart/form-data:
             schema:
@@ -288,7 +292,14 @@ paths:
                       format: binary
         required: true
       responses:
-        "200": { description: Post created successfully }
+        "200":
+          description: |
+            The postId (pid) of the new post
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "dkgo2953dleo"
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "500": { $ref: "#/components/responses/InternalServerError" }
@@ -300,7 +311,9 @@ paths:
       tags: ["Fotos"]
       summary: Get a Foto
       description: |
-        Get the foto with id fid.
+        Returns the metadata of the post with postId pid. 
+        The posts picture can be obtained via the GET /picture/{pid} API call 
+        with the pictureId from this calls response.
       security:
         - bearerAuth: []
       responses:
@@ -340,13 +353,14 @@ paths:
       tags: ["Fotos"]
       summary: Get the users that liked a foto
       description: |
-        Get the users and their ids which liked the foto.
+        Get a list of all users which liked the post with postId pid.
+        Returns a list of user objects and the number of likes.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            TODO
+            An array of users which liked the post and the number of likes.
           content:
             application/json:
               schema:
@@ -362,12 +376,12 @@ paths:
     parameters:
       - $ref: "#/components/parameters/postId"
       - $ref: "#/components/parameters/likeId"
-    put:
+    post:
       tags: ["Fotos"]
       summary: Like a Foto
       description: |
         Like a post from another users account. 
-        The postId specifies the post from the users account, the likeId is the userId of the liking user.
+        The postId (pid) specifies the post from the users account, the likeId (lid) is the userId of the liking user.
       security:
         - bearerAuth: []
       responses:
@@ -381,7 +395,7 @@ paths:
       summary: Unlike a Foto
       description: |
         Remove a like from another users foto. 
-        The postId specifies the foto from the users account, the likeId is the userId of the unliking user.
+        The postId (pid) specifies the foto from the users account, the likeId (lid) is the userId of the unliking user.
       security:
         - bearerAuth: []
       responses:
@@ -394,16 +408,17 @@ paths:
   /posts/{pid}/comments:
     parameters:
       - $ref: "#/components/parameters/postId"
-    post:
+    put:
       tags: ["Fotos"]
       summary: Comment a post
       description: |
         Comment a post from another users account. 
-        The postId specifies the post.
+        The postId (pid) specifies the post.
       security:
         - bearerAuth: []
       requestBody:
-        description: User details
+        description: | 
+            An array of comments and the number of comments made.
         content:
           application/json:
             schema:
@@ -416,15 +431,16 @@ paths:
         "500": { $ref: "#/components/responses/InternalServerError" }
     get:
       tags: ["Fotos"]
-      summary: Get the commments of a foto
+      summary: Get the commments of a post
       description: |
-        Get the comments of a foto
+        Get a list of all comments made on the post with postId pid.
+        Returns a list of comment objects and the number of comments.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            The foto with id fid as well as its metadata
+            A list of comments and the number of comments
           content:
             application/json:
               schema:
@@ -444,8 +460,8 @@ paths:
       tags: ["Fotos"]
       summary: Uncomment a Foto
       description: |
-        Delete a previously made comment on a foto from another users account. 
-        The postId specifies the post, the commentId specifies the id of the comment.
+        Delete a previously made comment from a post.
+        The postId (pid) specifies the post, the commentId (cid) specifies the id of the comment.
       security:
         - bearerAuth: []
       responses:
@@ -455,20 +471,20 @@ paths:
         "404": { description: Resource not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
-  /image/{pid}/:
+  /picture/{pid}:
     parameters:
-      - $ref: "#/components/parameters/postId"
+      - $ref: "#/components/parameters/pictureId"
     get:
-      tags: ["Image"]
-      summary: Get the image of a Post
+      tags: ["Picture"]
+      summary: Get the picture of a Post
       description: |
-        Get the image of the post with the post id pid.
+        Get the picture with the pictureId pid.
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            The foto with id fid as well as its metadata
+            A png image
           content:
             image/png:
               schema:
@@ -476,7 +492,7 @@ paths:
                 format: binary
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: Image not found }
+        "404": { description: Picture not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
                   
 components:
@@ -489,7 +505,7 @@ components:
       name: uid
       in: path
       required: true
-      description: The user id (uid) is an integer, that uniquely identifies a user.
+      description: The userId (uid) is a string, that uniquely identifies a user.
     followerId:
       schema:
         type: string
@@ -498,7 +514,7 @@ components:
       name: fid
       in: path
       required: true
-      description: The follower id (fid) is the user id (uid) of the follower.
+      description: The followerId (fid) is the userId (uid) of the follower.
     bannedId:
       schema:
         type: string
@@ -507,7 +523,7 @@ components:
       name: bid
       in: path
       required: true
-      description: The banned id (bid) is the user id (uid) of the banned user.
+      description: The bannedId (bid) is the userId (uid) of the banned user.
     postId:
       schema:
         type: string
@@ -516,7 +532,7 @@ components:
       name: pid
       in: path
       required: true
-      description: The post id (fid) is an integer, that uniquely identifies a post.
+      description: The postId (pid) is a string, that uniquely identifies a post.
     likeId:
       schema:
         type: string
@@ -525,7 +541,7 @@ components:
       name: lid
       in: path
       required: true
-      description: The like id (lid) is the user id (uid) of the user that liked the post.
+      description: The likeId (lid) is the userId (uid) of the user that liked the post.
     commentId:
       schema:
         type: string
@@ -534,7 +550,16 @@ components:
       name: cid
       in: path
       required: true
-      description: The comment id (cid) is an integer, thath uniquely identifies a comment.
+      description: The commentId (cid) is a string, thath uniquely identifies a comment.
+    pictureId:
+      schema:
+        type: string
+        example: "qlvh1857rovh"
+        readOnly: true
+      name: pid
+      in: path
+      required: true
+      description: The pictureId (pid) is a string, that uniquely identifies the picture of a post.
         
   schemas:
     user:
@@ -580,6 +605,9 @@ components:
           example: "Nice day at the beach."
           minLength: 1
           maxLength: 140
+        pictureId:
+          type: string
+          example: "qlvh1857rovh"
         likes:
           type: integer
           example: 14
@@ -594,7 +622,7 @@ components:
         length:
           type: integer
           example: 8
-          minimum: 1
+          minimum: 0
         list:
           type: array
           items:
@@ -622,7 +650,7 @@ components:
         length:
           type: integer
           example: 3
-          minimum: 1
+          minimum: 0
         list:
           type: array
           items:
