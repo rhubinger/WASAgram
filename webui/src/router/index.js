@@ -1,12 +1,13 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
-import EnrollView from "../views/EnrollView.vue";
-import ResultsView from "../views/ResultsView.vue";
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
 	routes: [
-		{path: '/', component: ResultsView},
-		{path: '/enroll', component: EnrollView},
+		{path: '/', component: HomeView},
+		{path: '/link1', component: HomeView},
+		{path: '/link2', component: HomeView},
+		{path: '/some/:id/link', component: HomeView},
 	]
 })
 

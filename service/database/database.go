@@ -31,37 +31,39 @@ Then you can initialize the AppDatabase and pass it to the api package.
 package database
 
 import (
-	"context"
+	"database/sql"
 	"errors"
-	"github.com/jackc/pgx/v5/pgxpool"
-)
-
-var (
-	ErrUserExists        = errors.New("user exists")
-	ErrUserDoesNotExists = errors.New("user does not exists")
+	"fmt"
 )
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	// CreateStudent creates a new user if he/she doesn't exist
-	CreateStudent(studentId int, firstName string, lastName string, email string, repoURL string, publicKey string, privateKey string) error
-
-	ListResults() ([]HomeworkResult, error)
-	GetGitLog(studentid int) (string, error)
-	GetOpenAPILog(studentid int) (string, error)
+	GetName() (string, error)
+	SetName(name string) error
 
 	Ping() error
 }
 
 type appdbimpl struct {
-	c *pgxpool.Pool
+	c *sql.DB
 }
 
 // New returns a new instance of AppDatabase based on the SQLite connection `db`.
 // `db` is required - an error will be returned if `db` is `nil`.
-func New(db *pgxpool.Pool) (AppDatabase, error) {
+func New(db *sql.DB) (AppDatabase, error) {
 	if db == nil {
 		return nil, errors.New("database is required when building a AppDatabase")
+	}
+
+	// Check if table exists. If not, the database is empty, and we need to create the structure
+	var tableName string
+	err := db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='example_table';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);`
+		_, err = db.Exec(sqlStmt)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
 	}
 
 	return &appdbimpl{
@@ -70,5 +72,5 @@ func New(db *pgxpool.Pool) (AppDatabase, error) {
 }
 
 func (db *appdbimpl) Ping() error {
-	return db.c.Ping(context.Background())
+	return db.c.Ping()
 }
