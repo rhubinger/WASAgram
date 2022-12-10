@@ -8,11 +8,15 @@ info:
   version: 1.0.0
 tags:
   - name: Login
-  - name: User
-  - name: Fotos
+  - name: General
+  - name: Followers
+  - name: Banning
+  - name: Posts
+  - name: Likes
+  - name: Comments
   - name: Picture
 paths:
-  /session:
+  /login:
     post:
       tags: ["Login"]
       summary: Logs in the user
@@ -30,8 +34,8 @@ paths:
               properties:
                 name:
                   type: string
+                  pattern: "x*"
                   example: "Alan Turing"
-                  pattern: 'ˆ.*?$'
                   minLength: 3
                   maxLength: 16
         required: true
@@ -45,15 +49,114 @@ paths:
                 properties:
                   identifier:
                     type: string
+                    pattern: "x*"
                     example: "qlzf1964sdlk"
+                    minLength: 12
+                    maxLength: 12
         "400": { $ref: "#/components/responses/BadRequest" }
         "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /user/{uid}/username:
+  
+  /searchresult:
+    parameters:
+      - $ref: "#/components/parameters/searchString"
+      - $ref: "#/components/parameters/searchType"
+    get:
+      tags: ["General"]
+      summary: Search for a user
+      description: |
+        Searches for a user by userId or name.
+        The searchstring parameter is the string that should match the searched users userId or name.
+        The optional parameter searchType defines wheter the searchString is a userId (uid) or a name.
+        Returns a list of user objects which fit the search parameters.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            A list of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userlist"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+        
+  /users/{uid}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["General"]
+      summary: Get a users Information
+      description: |
+        Obtain the userinformation (name, ...) of the user with userId uid
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            The userinformation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /users/{uid}/posts:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["General"]
+      summary: Get the posts of a user
+      description: |
+        Obtain users the posts of the user with userId uid in reverse chronological order.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            A list of posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/contentStream"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /users/{uid}/stream:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["General"]
+      summary: Get the stream of a user
+      description: |
+        Obtain the posts made by accounts which the user with userId uid follows in reverse chronological order.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            A list of posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/contentStream"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+ 
+  /users/{uid}/username:
     parameters:
       - $ref: "#/components/parameters/userId"
     put:
-      tags: ["User"]
+      tags: ["General"]
       summary: Change the username
       description: |
         Change the username of a user. 
@@ -69,24 +172,24 @@ paths:
               properties:
                 name:
                   type: string
+                  pattern: "x*"
                   example: "Alan Turing"
-                  pattern: "ˆ.*?$"
                   minLength: 3
                   maxLength: 16
         required: true
       responses:
-        "200": { description: Username changed successfully }
+        "201": { description: Username changed successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
   
-  /user/{uid}/followed:
+  /users/{uid}/followed:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["User"]
-      summary: Get all accounts which are followed by a user
+      tags: ["Followers"]
+      summary: Get all followed accounts
       description: |
         Get a list of all users which the user with userId uid follows.
         Returns a list of user objects and the number of followed users.
@@ -104,13 +207,42 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-                  
-  /user/{uid}/followers:
+        
+  /users/{uid}/followed/count:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["User"]
-      summary: Get all accounts which follow a user
+      tags: ["Followers"]
+      summary: Get the number of followed accounts
+      description: |
+        Obtain the number of accounts followed by the user with the userId uid
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Number of followed accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: "The count of followed"
+                    type: integer
+                    example: 8
+                    minimum: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /users/{uid}/followers:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["Followers"]
+      summary: Get all following accounts
       description: |
         Get a list of all users which follow the user with userId uid.
         Returns a list of user objects and the number of followers.
@@ -128,28 +260,60 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-                  
-  /user/{uid}/followers/{fid}:
+  
+  /users/{uid}/followers/count:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["Followers"]
+      summary: Get the number of following accounts
+      description: |
+        Obtain the number of accounts following the user with the userId uid
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Number of following accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: "The count of followers"
+                    type: integer
+                    example: 8
+                    minimum: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /users/{uid}/followers/{fid}:
     parameters:
       - $ref: "#/components/parameters/userId"
       - $ref: "#/components/parameters/followerId"
     post:
-      tags: ["User"]
+      tags: ["Followers"]
       summary: Follow a user
       description: |
         Follow another user.
         The userId (uid) specifies the followed user,
         the followerId (fid) specifies the userId of the user which wants to follow the other user.
       security:
-        - bearerAuth: []
+        - bearerAuth: []      
+      requestBody:
+        content:
+          application/json: {}
       responses:
-        "200": { description: Followed user successfully }
+        "204": { description: Followed user successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: No user found}
         "500": { $ref: "#/components/responses/InternalServerError" }
     delete:
-      tags: ["User"]
+      tags: ["Followers"]
       summary: Unfollow a user
       description: |
         Unfollow another user.
@@ -158,52 +322,17 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200": { description: Unfollowed user successfully }
+        "204": { description: Unfollowed user successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-  
-  /user/{uid}/banned/{bid}:
-    parameters:
-    - $ref: "#/components/parameters/userId"
-    - $ref: "#/components/parameters/bannedId"
-    post:
-      tags: ["User"]
-      summary: Ban a user
-      description: |
-        Ban another user.
-        The userId (uid) specifies the the banning user, 
-        the bannedId (bid) specifies the userId of the user which gets banned.
-      security:
-        - bearerAuth: []
-      responses:
-        "200": { description: Banned user successfully }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-    delete:
-      tags: ["User"]
-      summary: Unban a user
-      description: |
-        Unban another user.
-        The userId (uid) specifies the the banning user, 
-        the bannedId (bid) specifies the userId of the user which gets unbanned.
-      security:
-        - bearerAuth: []
-      responses:
-        "200": { description: Unbanned user successfully }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  
-  /user/{uid}/banned:
+        
+  /users/{uid}/banned:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["User"]
+      tags: ["Banning"]
       summary: Get all users which a user banned
       description: |
         Get a list of all users which are banned by the user userId uid.
@@ -222,48 +351,69 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-                  
-  /user/{uid}:
+       
+  /users/{uid}/banned/count:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["User"]
-      summary: Get a users profile data
+      tags: ["Banning"]
+      summary: Get the number of banned accounts
       description: |
-        Obtain the userinformation (name, ...) and posts (in reversec chronological order) of the user with userId uid.
+        Obtain the number of accounts the user with the userId uid has banned
       security:
         - bearerAuth: []
       responses:
         "200":
           description: |
-            The userinformation and a list of posts
+            Number of banned accounts
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/profile"
+                type: object
+                properties:
+                  count:
+                    description: "The count of banned accounts"
+                    type: integer
+                    example: 8
+                    minimum: 0
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-  
-  /user/{uid}/stream:
+
+  /users/{uid}/banned/{bid}:
     parameters:
-      - $ref: "#/components/parameters/userId"
-    get:
-      tags: ["User"]
-      summary: Get the stream of a user
+    - $ref: "#/components/parameters/userId"
+    - $ref: "#/components/parameters/bannedId"
+    post:
+      tags: ["Banning"]
+      summary: Ban a user
       description: |
-        Obtain the posts made by accounts which the user with userId uid follows in reverse chronological order.
+        Ban another user.
+        The userId (uid) specifies the the banning user, 
+        the bannedId (bid) specifies the userId of the user which gets banned.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json: {}
+      responses:
+        "204": { description: Banned user successfully }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+    delete:
+      tags: ["Banning"]
+      summary: Unban a user
+      description: |
+        Unban another user.
+        The userId (uid) specifies the the banning user, 
+        the bannedId (bid) specifies the userId of the user which gets unbanned.
       security:
         - bearerAuth: []
       responses:
-        "200":
-          description: |
-            A list of posts in reverse chronological order
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/stream"
+        "204": { description: Unbanned user successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
@@ -271,7 +421,7 @@ paths:
 
   /posts:
     put:
-      tags: ["Fotos"]
+      tags: ["Posts"]
       summary: Create a new post
       description: |
         Post a foto with caption to a users account. 
@@ -292,14 +442,17 @@ paths:
                       format: binary
         required: true
       responses:
-        "200":
+        "201":
           description: |
             The postId (pid) of the new post
           content:
             application/json:
               schema:
                 type: string
+                pattern: "x*"
                 example: "dkgo2953dleo"
+                minLength: 12
+                maxLength: 12
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "500": { $ref: "#/components/responses/InternalServerError" }
@@ -308,8 +461,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/postId"
     get:
-      tags: ["Fotos"]
-      summary: Get a Foto
+      tags: ["Posts"]
+      summary: Get a Post
       description: |
         Returns the metadata of the post with postId pid. 
         The posts picture can be obtained via the GET /picture/{pid} API call 
@@ -323,16 +476,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/post"
+                $ref: "#/components/schemas/post"
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
         
     delete:
-      tags: ["Fotos"]
+      tags: ["Posts"]
       summary: Delete a Post
       description: |
         Remove a post from a users account. 
@@ -340,7 +491,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200": { description: Post deleted successfully }
+        "204": { description: Post deleted successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
@@ -350,8 +501,8 @@ paths:
     parameters:
       - $ref: "#/components/parameters/postId"
     get:
-      tags: ["Fotos"]
-      summary: Get the users that liked a foto
+      tags: ["Likes"]
+      summary: Get the users that liked a post
       description: |
         Get a list of all users which liked the post with postId pid.
         Returns a list of user objects and the number of likes.
@@ -364,42 +515,72 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/userlist"
+                $ref: "#/components/schemas/userlist"
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-                  
+               
+  /posts/{pid}/likes/count:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    get:
+      tags: ["Likes"]
+      summary: Get the number of likes 
+      description: |
+        Obtain the number of likes the post with the postId pid has
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Number of likes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: "The count of likes"
+                    type: integer
+                    example: 8
+                    minimum: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+
   /posts/{pid}/likes/{lid}:
     parameters:
       - $ref: "#/components/parameters/postId"
       - $ref: "#/components/parameters/likeId"
     post:
-      tags: ["Fotos"]
-      summary: Like a Foto
+      tags: ["Likes"]
+      summary: Like a Post
       description: |
         Like a post from another users account. 
         The postId (pid) specifies the post from the users account, the likeId (lid) is the userId of the liking user.
       security:
         - bearerAuth: []
+      requestBody:
+        content:
+          application/json: {}
       responses:
-        "200": { description: Post liked successfully }
+        "204": { description: Post liked successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Resource not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
     delete:
-      tags: ["Fotos"]
-      summary: Unlike a Foto
+      tags: ["Likes"]
+      summary: Unlike a Post
       description: |
-        Remove a like from another users foto. 
-        The postId (pid) specifies the foto from the users account, the likeId (lid) is the userId of the unliking user.
+        Remove a like from another users post. 
+        The postId (pid) specifies the post from the users account, the likeId (lid) is the userId of the unliking user.
       security:
         - bearerAuth: []
       responses:
-        "200": { description: Post unliked successfully }
+        "204": { description: Post unliked successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Resource not found }
@@ -409,7 +590,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/postId"
     put:
-      tags: ["Fotos"]
+      tags: ["Comments"]
       summary: Comment a post
       description: |
         Comment a post from another users account. 
@@ -424,13 +605,13 @@ paths:
             schema:
               $ref: "#/components/schemas/comment"
       responses:
-        "200": { description: Comment created successfully }
+        "201": { description: Comment created successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
     get:
-      tags: ["Fotos"]
+      tags: ["Comments"]
       summary: Get the commments of a post
       description: |
         Get a list of all comments made on the post with postId pid.
@@ -444,12 +625,39 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/commentlist"
+                $ref: "#/components/schemas/commentlist"
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+  
+  /posts/{pid}/comments/count:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+    get:
+      tags: ["Comments"]
+      summary: Get the number of comments
+      description: |
+        Obtain the number of comments the post with the postId pid has
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Number of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: "The count of comments"
+                    type: integer
+                    example: 8
+                    minimum: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
   /posts/{pid}/comments/{cid}:
@@ -457,21 +665,21 @@ paths:
       - $ref: "#/components/parameters/postId"
       - $ref: "#/components/parameters/commentId"
     delete:
-      tags: ["Fotos"]
-      summary: Uncomment a Foto
+      tags: ["Comments"]
+      summary: Uncomment a Post
       description: |
         Delete a previously made comment from a post.
         The postId (pid) specifies the post, the commentId (cid) specifies the id of the comment.
       security:
         - bearerAuth: []
       responses:
-        "200": { description: Comment delted successfully }
+        "204": { description: Comment delted successfully }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Resource not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
-  /picture/{pid}:
+  /pictures/{pid}:
     parameters:
       - $ref: "#/components/parameters/pictureId"
     get:
@@ -497,11 +705,34 @@ paths:
                   
 components:
   parameters:
+    searchString:
+      schema:
+        type: string
+        pattern: "x*"
+        example: "qlzf1964sdlk"
+        readOnly: true
+        minLength: 3
+        maxLength: 16
+      name: searchString
+      in: query
+      required: true
+      description: The searchString is the information which should identify the user.
+    searchType:
+      schema:
+        type: string
+        enum: [uid, name]
+      name: type
+      in: query
+      required: false
+      description: The searchType describes the type of the searchString (uid, name)
     userId:
       schema:
         type: string
+        pattern: "x*"
         example: "qlzf1964sdlk"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: uid
       in: path
       required: true
@@ -509,8 +740,11 @@ components:
     followerId:
       schema:
         type: string
+        pattern: "x*"
         example: "qlfj5037flng"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: fid
       in: path
       required: true
@@ -518,8 +752,11 @@ components:
     bannedId:
       schema:
         type: string
+        pattern: "x*"
         example: "eolg4078rngk"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: bid
       in: path
       required: true
@@ -527,8 +764,11 @@ components:
     postId:
       schema:
         type: string
+        pattern: "x*"
         example: "qlvh1857rovh"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: pid
       in: path
       required: true
@@ -536,8 +776,11 @@ components:
     likeId:
       schema:
         type: string
+        pattern: "x*"
         example: "dpvk1047dovl"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: lid
       in: path
       required: true
@@ -545,8 +788,11 @@ components:
     commentId:
       schema:
         type: string
+        pattern: "x*"
         example: "dpvk2047fpwv"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: cid
       in: path
       required: true
@@ -554,105 +800,139 @@ components:
     pictureId:
       schema:
         type: string
+        pattern: "x*"
         example: "qlvh1857rovh"
         readOnly: true
+        minLength: 12
+        maxLength: 12
       name: pid
       in: path
       required: true
       description: The pictureId (pid) is a string, that uniquely identifies the picture of a post.
-        
+  
   schemas:
     user:
       type: object
       properties:
         userId:
+          description: "The if of the user"
           type: string
+          pattern: "x*"
           example: "dltk4078glfj"
+          minLength: 12
+          maxLength: 12
         name:
+          description: "The name of the user"
           type: string
+          pattern: "x*"
           example: "KonradZuse"
+          minLength: 3
+          maxLength: 16
         followers:
+          description: "The number of followers"
           type: integer
           example: 15400
           minimum: 0
         followed:
+          description: "The number of followed accounts"
           type: integer
           example: 530
           minimum: 0
-    stream:
-      type: array
-      items: 
-        $ref: "#/components/schemas/post"    
-    profile:
+    userlist:
       type: object
       properties:
-        user:
-          $ref: "#/components/schemas/user"
-        posts:
+        length:
+          description: "The amount of users the list would have (can exceed maxItems)"
+          type: integer
+          example: 8
+          minimum: 0
+        list:
+          description: "The list of users"
           type: array
-          items: 
-            $ref: "#/components/schemas/post"
+          minItems: 1
+          maxItems: 1000
+          items:
+            $ref: "#/components/schemas/user"
     post:
       type: object
       properties:
         poster:
           $ref: "#/components/schemas/user"
         date-time:
+          description: "The time of the posts creation"
           type: string
+          pattern: "x*"
           format: date-time
+          minLength: 24
+          maxLength: 24
         caption:
+          description: "The list of comments"
           type: string
+          pattern: "x*"
           example: "Nice day at the beach."
           minLength: 1
           maxLength: 140
         pictureId:
+          description: "The pictureId of the posts picture"
           type: string
+          pattern: "x*"
           example: "qlvh1857rovh"
+          minLength: 12
+          maxLength: 12
         likes:
+          description: "The number of likes"
           type: integer
           example: 14
           minimum: 0
         comments:
+          description: "The number of comments"
           type: integer
           example: 3
           minimum: 0
-    userlist:
-      type: object
-      properties:
-        length:
-          type: integer
-          example: 8
-          minimum: 0
-        list:
-          type: array
-          items:
-            $ref: "#/components/schemas/user"
+    contentStream:
+      type: array
+      minItems: 1
+      maxItems: 60
+      items: 
+        $ref: "#/components/schemas/post"    
     comment:
       type: object
       properties:
         poster:
           $ref: "#/components/schemas/user"
-        fotoId:
+        postId:
+          description: "The postId of the comments post"
           type: string
+          pattern: "x*"
           example: "qlzf1964sdlk"
+          minLength: 12
+          maxLength: 12
         date-time:
+          description: "The time of the comments upload"
           type: string
           format: date-time
+          minLength: 24
+          maxLength: 24
         comment:
+          description: "The comments itself"
           type: string
+          pattern: "x*"
           example: "Looks nice!"
           minLength: 1
           maxLength: 140
-          
     commentlist:
       type: object
       properties:
         length:
+          description: "The amount of comments the post has"
           type: integer
           example: 3
           minimum: 0
         list:
+          description: "The list of comments"
           type: array
+          minItems: 1
+          maxItems: 100
           items:
             $ref: "#/components/schemas/comment"
         
