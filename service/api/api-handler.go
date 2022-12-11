@@ -10,10 +10,11 @@ func (rt *_router) Handler() http.Handler {
 	// Login
 	rt.router.POST("/login", rt.Login)
 
-	// General
+	// Users
 	rt.router.GET("/searchresult", rt.SearchUser)
 	rt.router.GET("/users/:uid", rt.GetUser)
 	rt.router.GET("/users/:uid/posts", rt.GetPosts)
+	rt.router.GET("/users/:uid/posts/count", rt.GetPostCount)
 	rt.router.GET("/users/:uid/stream", rt.GetStream)
 	rt.router.PUT("/users/:uid/username", rt.ChangeUsername)
 

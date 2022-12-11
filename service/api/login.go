@@ -8,6 +8,7 @@ import (
 )
 
 func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Parse request body
 	var request LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	_ = r.Body.Close()
@@ -20,6 +21,11 @@ func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	// Check whether user already exists
+	// If no create user
+	// return identifier
+
 	// Send the response
 	var response = LoginResult{Identifier: ("@" + request.Name)}
 	w.Header().Set("content-type", "application/json")

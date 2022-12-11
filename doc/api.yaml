@@ -8,7 +8,7 @@ info:
   version: 1.0.0
 tags:
   - name: Login
-  - name: General
+  - name: Users
   - name: Followers
   - name: Banning
   - name: Posts
@@ -61,7 +61,7 @@ paths:
       - $ref: "#/components/parameters/searchString"
       - $ref: "#/components/parameters/searchType"
     get:
-      tags: ["General"]
+      tags: ["Users"]
       summary: Search for a user
       description: |
         Searches for a user by userId or name.
@@ -87,7 +87,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["General"]
+      tags: ["Users"]
       summary: Get a users Information
       description: |
         Obtain the userinformation (name, ...) of the user with userId uid
@@ -110,7 +110,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["General"]
+      tags: ["Users"]
       summary: Get the posts of a user
       description: |
         Obtain users the posts of the user with userId uid in reverse chronological order.
@@ -128,12 +128,41 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
+        
+  /users/{uid}/posts/count:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      tags: ["Users"]
+      summary: Get the number of posts
+      description: |
+        Obtain the number of posts made by the user with the userId uid
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Number of created posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: "The count of posts"
+                    type: integer
+                    example: 8
+                    minimum: 0
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
   
   /users/{uid}/stream:
     parameters:
       - $ref: "#/components/parameters/userId"
     get:
-      tags: ["General"]
+      tags: ["Users"]
       summary: Get the stream of a user
       description: |
         Obtain the posts made by accounts which the user with userId uid follows in reverse chronological order.
@@ -156,7 +185,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/userId"
     put:
-      tags: ["General"]
+      tags: ["Users"]
       summary: Change the username
       description: |
         Change the username of a user. 
@@ -828,6 +857,11 @@ components:
           example: "KonradZuse"
           minLength: 3
           maxLength: 16
+        posts:
+          description: "The number of posts from the user"
+          type: integer
+          example: 57
+          minimum: 0
         followers:
           description: "The number of followers"
           type: integer

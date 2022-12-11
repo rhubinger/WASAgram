@@ -5,6 +5,7 @@ package api
 type User struct {
 	UserId    string `json:"userId"`
 	Name      string `json:"name"`
+	Posts     int    `json:"posts"`
 	Followers int    `json:"followers"`
 	Followed  int    `json:"followed"`
 }
@@ -83,7 +84,7 @@ type LoginResult struct {
 	Identifier string `json:"identifier"`
 }
 
-// General
+// Change username
 
 type ChangeNameRequest struct {
 	Name string `json:"name"`
