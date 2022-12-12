@@ -5,13 +5,14 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
 func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -20,12 +21,12 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 
 	// Send the response
 	var length = 3
-	var users = make([]User, 0, length)
+	var users = make([]schemes.User, 0, length)
 	for i := 0; i < length; i++ {
-		var u = User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
+		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
 		users = append(users, u)
 	}
-	var response = UserList{Length: length, Users: users}
+	var response = schemes.UserList{Length: length, Users: users}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -33,8 +34,8 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -50,14 +51,14 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	lid := ps.ByName("lid")
-	if len(lid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(lid) {
+		rt.baseLogger.Error("LikeId (lid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -72,14 +73,14 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) DeleteLike(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	lid := ps.ByName("lid")
-	if len(lid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(lid) {
+		rt.baseLogger.Error("LikeId (lid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

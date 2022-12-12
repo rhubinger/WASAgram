@@ -10,23 +10,22 @@ import (
 func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	fileBytes, err := ioutil.ReadFile("pictures/portrait_20.png")
 	if err != nil {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+		rt.baseLogger.WithError(err).Error("GetPicture: Failed to parse request body")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Create path and get picture
-	path := "image/png"
+	// Get picture from db
 
 	// Send the response
-	w.Header().Set("Content-Type", path)
+	w.Header().Set("Content-Type", "image/png")
 	w.Write(fileBytes)
 	return
 }

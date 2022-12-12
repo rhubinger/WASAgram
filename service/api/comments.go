@@ -5,27 +5,28 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
 func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Parse request body
-	var comment Comment
+	var comment schemes.Comment
 	err := json.NewDecoder(r.Body).Decode(&comment)
 	_ = r.Body.Close()
 	if err != nil {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+		rt.baseLogger.WithError(err).Error("CreateComment: Failed to parse request body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if !comment.Valid() {
-		//ctx.Logger.Error("enroll: error validating JSON")
+		rt.baseLogger.Error("CreateComment: Request Body invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -40,8 +41,8 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -50,13 +51,13 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Send the response
 	var length = 3
-	var comments = make([]Comment, 0, length)
+	var comments = make([]schemes.Comment, 0, length)
 	for i := 0; i < length; i++ {
-		var u = User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		var c = Comment{Poster: u, PostId: "pid", DateTime: "datetime", Comment: "commenting..."}
+		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
+		var c = schemes.Comment{Poster: u, PostId: "pid", DateTime: "datetime", Comment: "commenting..."}
 		comments = append(comments, c)
 	}
-	var response = CommentList{Length: length, Comments: comments}
+	var response = schemes.CommentList{Length: length, Comments: comments}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -64,8 +65,8 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -81,14 +82,14 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if len(pid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	cid := ps.ByName("cid")
-	if len(cid) != 12 {
-		//ctx.Logger.WithError(err).Error("enroll: error decoding JSON") TODO figure out how to use those
+	if !ValidId(cid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

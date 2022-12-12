@@ -7,10 +7,8 @@ import (
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
 	// Register routes
-	// Login
-	rt.router.POST("/login", rt.Login)
-
 	// Users
+	rt.router.POST("/login", rt.Login)
 	rt.router.GET("/searchresult", rt.SearchUser)
 	rt.router.GET("/users/:uid", rt.GetUser)
 	rt.router.GET("/users/:uid/posts", rt.GetPosts)
