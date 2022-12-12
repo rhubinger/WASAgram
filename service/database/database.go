@@ -39,30 +39,30 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	/*// User
-	InsertUser(user api.User, identifier string) error
+	InsertUser(user schemes.User, identifier string) error
 
 	GetIdentifier(uid string) (string, error)
 	UpdateUsername(name string) error
-	GetUser(uid string) (api.User, error)
-	SearchUser(searchString string, searchType string) ([]api.User, error)
+	GetUser(uid string) (schemes.User, error)
+	SearchUser(searchString string, searchType string) ([]schemes.User, error)
 
 	// Posts
-	InsertPost(post api.Post) error
+	InsertPost(post schemes.Post) error
 	DeletePost(pid string) error
 
 	GetPictureId(pid string) (string, error)
-	GetPost(pid string) (api.Post, error)
-	GetStream(uid string) ([]api.Post, error)
-	GetPosts(uid string) ([]api.Post, error)
+	GetPost(pid string) (schemes.Post, error)
+	GetStream(uid string) ([]schemes.Post, error)
+	GetPosts(uid string) ([]schemes.Post, error)
 	GetPostCount(uid string) (int, error)
 	IncrementPostCount(uid string) error
 	DecrementPostCount(uid string) error
 
 	// Comments
-	InsertComment(comment api.Comment) error
+	InsertComment(comment schemes.Comment) error
 	DeleteComments(pid string) error
 
-	GetComments(pid string) ([]api.Comment, error)
+	GetComments(pid string) ([]schemes.Comment, error)
 	GetCommentCount(pid string) (int, error)
 	IncrementCommentCount(pid string) error
 	DecrementCommentCount(pid string) error
@@ -71,12 +71,12 @@ type AppDatabase interface {
 	Follow(uid string, fid string) error
 	Unfollow(uid string, fid string) error
 
-	GetFollowers(uid string) ([]api.User, error)
+	GetFollowers(uid string) ([]schemes.User, error)
 	IncrementFollowerCount(uid string) error
 	DecrementFollowerCount(uid string) error
 	GetFollowerCount(uid string) (int, error)
 
-	GetFollowed(uid string) ([]api.User, error)
+	GetFollowed(uid string) ([]schemes.User, error)
 	GetFollowedCount(uid string) (int, error)
 	IncrementFollowedCount(uid string) error
 	DecrementFollowedCount(uid string) error
@@ -85,7 +85,7 @@ type AppDatabase interface {
 	Ban(uid string, bid string) error
 	Unban(uid string, bid string) error
 
-	GetBanned(uid string) ([]api.User, error)
+	GetBanned(uid string) ([]schemes.User, error)
 	GetBannedCount(uid string) (int, error)
 
 	// Likes
@@ -93,7 +93,7 @@ type AppDatabase interface {
 	Unlike(pid string, uid string) error
 	DeleteLikes(pid string) error
 
-	GetLikes(pid string) ([]api.User, error)
+	GetLikes(pid string) ([]schemes.User, error)
 	GetLikeCount(pid string) (int, error)
 	IncrementLikeCount(pid string) error
 	DecrementLikeCount(pid string) error
@@ -123,7 +123,14 @@ func New(db *sql.DB) (AppDatabase, error) {
 	var userTable string
 	err := db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&userTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE users (
+						userId VARCHAR(16) NOT NULL PRIMARY KEY,
+						name VARCHAR(30) NOT NULL, 
+						identifier CHAR(11) NOT NULL,
+						posts INTEGER NOT NULL,
+						followers INTEGER NOT NULL,
+						followed INTEGER NOT NULL
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -133,7 +140,15 @@ func New(db *sql.DB) (AppDatabase, error) {
 	var postTable string
 	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='posts';`).Scan(&postTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE posts (
+						postId CHAR(11) NOT NULL PRIMARY KEY,
+						userId CHAR(11),
+						uploadTime DATETIME,
+						caption VARCHAR(140),
+						pictureId CHAR(11),
+						likes INTEGER,
+						comments INTEGER
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -143,7 +158,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 	var commentTable string
 	err = db.QueryRow(`SELECT cid FROM sqlite_master WHERE type='table' AND name='comments';`).Scan(&commentTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE comments (
+						commentId CHAR(11) NOT NULL PRIMARY KEY,
+						userId CHAR(11),
+						postId CHAR(11),
+						uploadTime DATETIME,
+						commentText VARCHAR(140)
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -153,7 +174,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 	var followerTable string
 	err = db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='followers';`).Scan(&followerTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE followers (
+						userId CHAR(11) NOT NULL,
+						followerId CHAR(11) NOT NULL,
+						PRIMARY KEY (userId, followerId)
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -161,9 +186,13 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 	// Banned table
 	var bannedTable string
-	err = db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='banned';`).Scan(&bannedTable)
+	err = db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='bans';`).Scan(&bannedTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE bans (
+						userId CHAR(11) NOT NULL,
+						bannedId CHAR(11) NOT NULL,
+						PRIMARY KEY (userId, bannedId)
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -173,7 +202,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 	var likeTable string
 	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&likeTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE likes (
+						postId CHAR(11) NOT NULL,
+						userId CHAR(11) NOT NULL,
+						PRIMARY KEY (postId, userId)
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
@@ -181,9 +214,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 	// Picture table
 	var pictureTable string
-	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&pictureTable)
+	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='pictures';`).Scan(&pictureTable)
 	if errors.Is(err, sql.ErrNoRows) {
-		sqlStmt := `CREATE TABLE example_table (id INTEGER NOT NULL PRIMARY KEY, name TEXT);` // TODO insert correct SQL statement
+		sqlStmt := `CREATE TABLE pictures (
+						pictureId CHAR(11) NOT NULL PRIMARY KEY,
+						picture BLOB
+					);`
 		_, err = db.Exec(sqlStmt)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
