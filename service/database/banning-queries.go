@@ -2,9 +2,18 @@ package database
 
 import "github.com/rhubinger/WASAgram/service/schemes"
 
-// GetName is an example that shows you how to query data
+func (db *appdbimpl) Ban(uid string, bid string) error {
+	return nil
+}
+
+func (db *appdbimpl) Unban(uid string, bid string) error {
+	return nil
+}
+
 func (db *appdbimpl) GetBanned(uid string) ([]schemes.User, error) {
-	var name string
-	err := db.c.QueryRow("SELECT name FROM example_table WHERE id=1").Scan(&name)
-	return []schemes.User{}, err
+	return []schemes.User{}, nil
+}
+
+func (db *appdbimpl) GetBannedCount(uid string) (int, error) {
+	return -1, nil
 }

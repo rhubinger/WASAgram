@@ -2,9 +2,30 @@ package database
 
 import "github.com/rhubinger/WASAgram/service/schemes"
 
-// GetName is an example that shows you how to query data
+func (db *appdbimpl) Like(pid string, uid string) error {
+	return nil
+}
+
+func (db *appdbimpl) Unlike(pid string, uid string) error {
+	return nil
+}
+
+func (db *appdbimpl) DeleteLikes(pid string) error {
+	return nil
+}
+
 func (db *appdbimpl) GetLikes(pid string) ([]schemes.User, error) {
-	var name string
-	err := db.c.QueryRow("SELECT name FROM example_table WHERE id=1").Scan(&name)
-	return []schemes.User{}, err
+	return []schemes.User{}, nil
+}
+
+func (db *appdbimpl) GetLikeCount(pid string) (int, error) {
+	return -1, nil
+}
+
+func (db *appdbimpl) IncrementLikeCount(pid string) error {
+	return nil
+}
+
+func (db *appdbimpl) DecrementLikeCount(pid string) error {
+	return nil
 }

@@ -35,18 +35,14 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		log.Println(err)
 	}
 
-	// Save picture in folder
-	var fid = "dlfi4986gknd"
-	filepath := "pictures/" + fid + ".png"
-	err = ioutil.WriteFile(filepath, fileBytes, 0777)
-	if err != nil {
-		rt.baseLogger.Error("Create Post: Image couldn't be saved")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	// Insert post in db
 	// Insert image in db
+	err = rt.db.InsertPicture("12345678901", fileBytes) // TODO change to proper id
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreatePost: Failed to insert picture in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Increment posts in user
 
 	// Send the response
@@ -87,6 +83,7 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 	// Delete likes from db
 	// Delete comments from db
 	// Decrement posts from user
+	rt.db.DeletePicture(pid)
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)

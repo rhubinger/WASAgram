@@ -34,11 +34,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
-	/*// User
+	// User
 	InsertUser(user schemes.User, identifier string) error
 
 	GetIdentifier(uid string) (string, error)
@@ -72,9 +74,9 @@ type AppDatabase interface {
 	Unfollow(uid string, fid string) error
 
 	GetFollowers(uid string) ([]schemes.User, error)
+	GetFollowerCount(uid string) (int, error)
 	IncrementFollowerCount(uid string) error
 	DecrementFollowerCount(uid string) error
-	GetFollowerCount(uid string) (int, error)
 
 	GetFollowed(uid string) ([]schemes.User, error)
 	GetFollowedCount(uid string) (int, error)
@@ -99,10 +101,10 @@ type AppDatabase interface {
 	DecrementLikeCount(pid string) error
 
 	// Pictures
-	InsertPicture(pid string, picture string) error // TODO get right datatype for images in BLOB
-	GetPicture(pid string) (string, byte)
+	InsertPicture(pid string, picture []byte) error // TODO get right datatype for images in BLOB
+	GetPicture(pid string) ([]byte, error)
 	DeletePicture(pid string) error
-	*/
+
 	// Ping
 	Ping() error
 }
@@ -119,9 +121,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	// Check if tables exist. If not, the tables get created
+	var str string
 	// User table
-	var userTable string
-	err := db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&userTable)
+	err := db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='users';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE users (
 						userId VARCHAR(16) NOT NULL PRIMARY KEY,
@@ -137,8 +139,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Posts table
-	var postTable string
-	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='posts';`).Scan(&postTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='posts';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE posts (
 						postId CHAR(11) NOT NULL PRIMARY KEY,
@@ -155,8 +156,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Comments table
-	var commentTable string
-	err = db.QueryRow(`SELECT cid FROM sqlite_master WHERE type='table' AND name='comments';`).Scan(&commentTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='comments';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE comments (
 						commentId CHAR(11) NOT NULL PRIMARY KEY,
@@ -171,8 +171,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Followers table
-	var followerTable string
-	err = db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='followers';`).Scan(&followerTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='followers';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE followers (
 						userId CHAR(11) NOT NULL,
@@ -185,8 +184,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Banned table
-	var bannedTable string
-	err = db.QueryRow(`SELECT uid FROM sqlite_master WHERE type='table' AND name='bans';`).Scan(&bannedTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='bans';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE bans (
 						userId CHAR(11) NOT NULL,
@@ -199,8 +197,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Likkes table
-	var likeTable string
-	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&likeTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE likes (
 						postId CHAR(11) NOT NULL,
@@ -213,8 +210,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 	// Picture table
-	var pictureTable string
-	err = db.QueryRow(`SELECT pid FROM sqlite_master WHERE type='table' AND name='pictures';`).Scan(&pictureTable)
+	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='pictures';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE pictures (
 						pictureId CHAR(11) NOT NULL PRIMARY KEY,
