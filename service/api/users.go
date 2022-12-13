@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rhubinger/WASAgram/service/schemes"
@@ -24,11 +25,24 @@ func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	// Check whether user already exists
-	// If no create user (set posts, followers & followed to 0)
-	// return identifier
+	identifier, err := rt.db.GetIdentifier(request.UserId)
+	if identifier == "" {
+		// If user doesn't exist create user
+		name := strings.Replace(request.UserId, "@", "", -1)
+		name = strings.Replace(name, "_", " ", -1)
+		identifier = rt.db.GenerateId("")
 
-	// Send the response
-	var response = LoginResult{Identifier: "gocwRvLhDf8"}
+		var user = schemes.User{UserId: request.UserId, Name: name, Posts: 0, Followers: 0, Followed: 0}
+		err := rt.db.InsertUser(user, identifier)
+		if err != nil {
+			rt.baseLogger.WithError(err).Error("Login: Failed to insert new user into db")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Send response (identifier)
+	var response = LoginResult{Identifier: identifier}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -46,22 +60,18 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	searchType := r.URL.Query().Get("type")
-	if searchType == "" {
-		searchType = "both"
-	}
 
 	// Search user in db
+	users, err := rt.db.SearchUser(searchString, searchType)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("SearchUser: no users found in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var contentStream = make([]schemes.Post, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		var p = schemes.Post{Poster: u, DateTime: "10-12-2022", Caption: "caption", PictureId: "pid", Likes: 3, Comments: 4}
-		contentStream = append(contentStream, p)
-	}
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(contentStream)
+	_ = json.NewEncoder(w).Encode(users)
 }
 
 func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -74,11 +84,16 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	// Get user from db by uid
+	user, err := rt.db.GetUser(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetUser: Failed to get User from db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	// Send the response
-	var response = schemes.User{UserId: "uid", Name: "name", Posts: 5, Followers: 1, Followed: 0}
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(user)
 }
 
 func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -167,6 +182,12 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Update/Change username in db
+	err = rt.db.UpdateUsername(request.Name, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("ChangeUsername: Failed to update new name in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusCreated)

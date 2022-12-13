@@ -740,7 +740,7 @@ components:
     searchString:
       schema:
         type: string
-        pattern: "[@a-zA-z0-9-_.]{1,30}"
+        pattern: "[@a-zA-z0-9-_]{1,30}"
         example: "Alan_Turing"
         readOnly: true
         minLength: 1

@@ -44,7 +44,7 @@ type AppDatabase interface {
 	InsertUser(user schemes.User, identifier string) error
 
 	GetIdentifier(uid string) (string, error)
-	UpdateUsername(name string) error
+	UpdateUsername(name string, uid string) error
 	GetUser(uid string) (schemes.User, error)
 	SearchUser(searchString string, searchType string) ([]schemes.User, error)
 
