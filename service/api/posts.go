@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -30,14 +30,16 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	defer file.Close()
-	fileBytes, err := ioutil.ReadAll(file)
+	//fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Println(err)
 	}
 
 	// Insert post in db
 	// Insert image in db
-	err = rt.db.InsertPicture("12345678901", fileBytes) // TODO change to proper id
+	pid := rt.db.GenerateId("postId")
+	fmt.Println(pid)
+	//err = rt.db.InsertPicture(pid, fileBytes) // TODO change to proper id
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Failed to insert picture in db")
 		w.WriteHeader(http.StatusInternalServerError)

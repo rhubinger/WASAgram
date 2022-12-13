@@ -101,9 +101,12 @@ type AppDatabase interface {
 	DecrementLikeCount(pid string) error
 
 	// Pictures
-	InsertPicture(pid string, picture []byte) error // TODO get right datatype for images in BLOB
+	InsertPicture(pid string, picture []byte) error
 	GetPicture(pid string) ([]byte, error)
 	DeletePicture(pid string) error
+
+	// Generates unique Ids for posts, comments and pictures
+	GenerateId(idType string) string
 
 	// Ping
 	Ping() error
