@@ -18,6 +18,8 @@ func (db *appdbimpl) GenerateId(idType string) string {
 	// Infer database name from idType
 	var table string
 	switch idType {
+	case "userId":
+		table = "users"
 	case "postId":
 		table = "posts"
 	case "commentId":

@@ -1,8 +1,9 @@
 package database
 
-func (db *appdbimpl) InsertPicture(pid string, picture []byte) error {
+func (db *appdbimpl) InsertPicture(picture []byte) (string, error) {
+	pid := db.GenerateId("pictureId")
 	_, err := db.c.Exec("INSERT INTO pictures VALUES (?, ?);", pid, picture)
-	return err
+	return pid, err
 }
 
 func (db *appdbimpl) GetPicture(pid string) ([]byte, error) {

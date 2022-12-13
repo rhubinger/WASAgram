@@ -41,7 +41,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/posts/:pid/likes/:lid", rt.LikePost)
 	rt.router.DELETE("/posts/:pid/likes/:lid", rt.DeleteLike)
 
-	// Comments
+	// Comments // TODO delete comment call for single comment
 	rt.router.PUT("/posts/:pid/comments", rt.CreateComment)
 	rt.router.GET("/posts/:pid/comments", rt.GetComments)
 	rt.router.GET("/posts/:pid/comments/count", rt.GetCommentCount)

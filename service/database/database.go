@@ -41,7 +41,7 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 	// User
-	InsertUser(user schemes.User, identifier string) error
+	InsertUser(user schemes.User) (string, error)
 
 	GetIdentifier(uid string) (string, error)
 	UpdateUsername(name string, uid string) error
@@ -49,7 +49,7 @@ type AppDatabase interface {
 	SearchUser(searchString string, searchType string) ([]schemes.User, error)
 
 	// Posts
-	InsertPost(post schemes.Post) error
+	InsertPost(post schemes.Post) (string, error)
 	DeletePost(pid string) error
 
 	GetPictureId(pid string) (string, error)
@@ -61,7 +61,8 @@ type AppDatabase interface {
 	DecrementPostCount(uid string) error
 
 	// Comments
-	InsertComment(comment schemes.Comment) error
+	InsertComment(comment schemes.Comment) (string, error)
+	DeleteComment(cid string) error
 	DeleteComments(pid string) error
 
 	GetComments(pid string) ([]schemes.Comment, error)
@@ -101,7 +102,7 @@ type AppDatabase interface {
 	DecrementLikeCount(pid string) error
 
 	// Pictures
-	InsertPicture(pid string, picture []byte) error
+	InsertPicture(picture []byte) (string, error)
 	GetPicture(pid string) ([]byte, error)
 	DeletePicture(pid string) error
 

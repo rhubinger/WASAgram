@@ -2,8 +2,9 @@ package database
 
 import "github.com/rhubinger/WASAgram/service/schemes"
 
-func (db *appdbimpl) InsertPost(post schemes.Post) error {
-	return nil
+func (db *appdbimpl) InsertPost(post schemes.Post) (string, error) {
+	identifier := db.GenerateId("postId")
+	return identifier, nil
 }
 
 func (db *appdbimpl) DeletePost(pid string) error {

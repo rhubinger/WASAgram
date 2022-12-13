@@ -6,10 +6,11 @@ import (
 	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
-func (db *appdbimpl) InsertUser(user schemes.User, identifier string) error {
+func (db *appdbimpl) InsertUser(user schemes.User) (string, error) {
+	identifier := db.GenerateId("")
 	_, err := db.c.Exec("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?);",
 		user.UserId, user.Name, identifier, user.Posts, user.Followers, user.Followed)
-	return err
+	return identifier, err
 }
 
 func (db *appdbimpl) GetIdentifier(uid string) (string, error) {

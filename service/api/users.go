@@ -30,10 +30,9 @@ func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		// If user doesn't exist create user
 		name := strings.Replace(request.UserId, "@", "", -1)
 		name = strings.Replace(name, "_", " ", -1)
-		identifier = rt.db.GenerateId("")
 
 		var user = schemes.User{UserId: request.UserId, Name: name, Posts: 0, Followers: 0, Followed: 0}
-		err := rt.db.InsertUser(user, identifier)
+		identifier, err = rt.db.InsertUser(user)
 		if err != nil {
 			rt.baseLogger.WithError(err).Error("Login: Failed to insert new user into db")
 			w.WriteHeader(http.StatusInternalServerError)
