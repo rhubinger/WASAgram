@@ -25,9 +25,9 @@ func (db *appdbimpl) UpdateUsername(name string, uid string) error {
 
 func (db *appdbimpl) GetUser(uid string) (schemes.User, error) {
 	var u schemes.User
-	err := db.c.QueryRow("SELECT userid, name, posts, followers, followed 
+	err := db.c.QueryRow(`SELECT userId, name, posts, followers, followed
 						FROM users 
-						WHERE userId = ?;", uid).Scan(&u.UserId, &u.Name, &identifier, &u.Posts, &u.Followers, &u.Followed)
+						WHERE userId = ?;`, uid).Scan(&u.UserId, &u.Name, &u.Posts, &u.Followers, &u.Followed)
 	return u, err
 }
 
@@ -38,17 +38,17 @@ func (db *appdbimpl) SearchUser(searchString string, searchType string) ([]schem
 	searchString = "%" + searchString + "%"
 	switch searchType {
 	case "uid":
-		rows, err = db.c.Query("SELECT userid, name, posts, followers, followed 
+		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed 
 								FROM users 
-								WHERE userId LIKE ?;", searchString)
+								WHERE userId LIKE ?;`, searchString)
 	case "name":
-		rows, err = db.c.Query("SELECT userid, name, posts, followers, followed 
+		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed 
 								FROM users 
-								WHERE name LIKE ?;", searchString)
+								WHERE name LIKE ?;`, searchString)
 	default:
-		rows, err = db.c.Query("SELECT userid, name, posts, followers, followed
+		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed
 								FROM users 
-								WHERE userId LIKE ? OR name LIKE ?;", searchString, searchString)
+								WHERE userId LIKE ? OR name LIKE ?;`, searchString, searchString)
 	}
 	if err != nil {
 		return nil, err

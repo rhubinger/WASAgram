@@ -8,6 +8,7 @@ import (
 	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
+// Prevent self ban
 func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")

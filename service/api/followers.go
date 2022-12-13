@@ -8,6 +8,7 @@ import (
 	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
+// Prevent self folow
 func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
