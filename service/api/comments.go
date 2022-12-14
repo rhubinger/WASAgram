@@ -32,10 +32,14 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	// Insert into db
+	cid := "tesCID"
 	// Increment posts comment count
 
 	// Send the response
+	var response = CreateCommentResponse{CommentId: cid}
 	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("content-type", "application/json")
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

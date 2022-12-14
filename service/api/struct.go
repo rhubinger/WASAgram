@@ -47,6 +47,11 @@ type CreatePostResponse struct {
 	PostId string `json:"postId"`
 }
 
+// Create comment response
+type CreateCommentResponse struct {
+	CommentId string `json:"commentId"`
+}
+
 // Validity Checker for Parameters
 func ValidUid(uid string) bool {
 	correctPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", uid)
