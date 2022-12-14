@@ -36,20 +36,35 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	// Insert image in db
-	pid, err := rt.db.InsertPicture(fileBytes)
+	pictureId, err := rt.db.InsertPicture(fileBytes)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Failed to insert picture in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	// Insert post in db
+	// Format metadata and insert post in db
+	metadata.PictureId = pictureId
+	metadata.Likes = 0
+	metadata.Comments = 0
+	pid, err := rt.db.InsertPost(metadata)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Create Post: failed insert post (metadata) into db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Increment posts in user
+	err = rt.db.IncrementPostCount(metadata.Poster.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreatePost: Failed to increment post count of posting user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var post = CreatePostResponse{PostId: pid}
+	var response = CreatePostResponse{PostId: pid}
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(post)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -61,12 +76,16 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	// Get post from db
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPost: Failed to get post from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var user = schemes.User{UserId: "uid", Name: "name", Posts: 5, Followers: 194, Followed: 207}
-	var response = schemes.Post{Poster: user, DateTime: "datetime", Caption: "caption", PictureId: "pid", Likes: 497, Comments: 53}
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(post)
 }
 
 func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -78,12 +97,48 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
+	// Get from database post to get pictureId and userId of poster
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to get Post from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Delete post from db
+	err = rt.db.DeletePost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to delete post from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Delete picture from db
+	err = rt.db.DeletePicture(post.PictureId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to delete picture from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Delete likes from db
+	err = rt.db.DeleteLikes(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to delete posts likes from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Delete comments from db
-	// Decrement posts from user
-	rt.db.DeletePicture(pid)
+	err = rt.db.DeleteComments(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to delete posts comments from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// Decrement post count from user
+	err = rt.db.DecrementPostCount(post.Poster.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: failed to decrement the posters post count in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)

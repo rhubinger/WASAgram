@@ -19,15 +19,15 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Get list of banned users by uid
+	banned, err := rt.db.GetBanned(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBanned: failed to get banned from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var users = make([]schemes.User, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		users = append(users, u)
-	}
-	var response = schemes.UserList{Length: length, Users: users}
+	var response = schemes.UserList{Length: len(banned), Users: banned}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -42,9 +42,15 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Get count of banned account
+	count, err := rt.db.GetBannedCount(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBannedCount: failed to get banned count from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var response = GetCountResult{Count: 5}
+	var response = GetCountResult{Count: count}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -65,6 +71,12 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 
 	// Insert ban in db
+	err := rt.db.Ban(uid, bid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Ban: failed to insert ban into db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)
@@ -86,6 +98,12 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	// Delete ban from db
+	err := rt.db.Unban(uid, bid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Ban: failed to delete ban from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)

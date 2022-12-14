@@ -4,6 +4,10 @@ import (
 	"net/http"
 )
 
+// TODO assure better return codes
+// TODO implement security
+// TODO assure user and commentlist max lengths
+
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
 	// Register routes
@@ -38,8 +42,8 @@ func (rt *_router) Handler() http.Handler {
 	// Likes
 	rt.router.GET("/posts/:pid/likes", rt.GetLikes)
 	rt.router.GET("/posts/:pid/likes/count", rt.GetLikeCount)
-	rt.router.PUT("/posts/:pid/likes/:lid", rt.LikePost)
-	rt.router.DELETE("/posts/:pid/likes/:lid", rt.DeleteLike)
+	rt.router.PUT("/posts/:pid/likes/:uid", rt.LikePost)
+	rt.router.DELETE("/posts/:pid/likes/:uid", rt.UnlikePost)
 
 	// Comments
 	rt.router.POST("/posts/:pid/comments", rt.CreateComment)

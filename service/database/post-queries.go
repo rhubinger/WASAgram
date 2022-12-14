@@ -4,7 +4,7 @@ import "github.com/rhubinger/WASAgram/service/schemes"
 
 func (db *appdbimpl) InsertPost(post schemes.Post) (string, error) {
 	pid := db.GenerateId("postId")
-	_, err := db.c.Exec("INSERT INTO posts VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, 1, 1);",
+	_, err := db.c.Exec("INSERT INTO posts VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?);",
 		pid, post.Poster.UserId, post.Caption, post.PictureId, post.Likes, post.Comments)
 	return pid, err
 }

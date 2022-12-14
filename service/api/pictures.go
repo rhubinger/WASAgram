@@ -10,7 +10,7 @@ func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprou
 	// Parse parameters
 	pid := ps.ByName("pid")
 	if !ValidId(pid) {
-		rt.baseLogger.Error("PostId (pid) invalid")
+		rt.baseLogger.Error("PictureId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

@@ -8,7 +8,7 @@ func (db *appdbimpl) Ban(uid string, bid string) error {
 }
 
 func (db *appdbimpl) Unban(uid string, bid string) error {
-	_, err := db.c.Exec("IDELETE FROM bans WHERE userId = ? AND bannedId = ?", uid, bid)
+	_, err := db.c.Exec("DELETE FROM bans WHERE userId = ? AND bannedId = ?", uid, bid)
 	return err
 }
 

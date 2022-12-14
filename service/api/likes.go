@@ -18,15 +18,15 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 	}
 
 	// Get list of likes
+	likes, err := rt.db.GetLikes(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikes: failed to get likes from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var users = make([]schemes.User, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		users = append(users, u)
-	}
-	var response = schemes.UserList{Length: length, Users: users}
+	var response = schemes.UserList{Length: len(likes), Users: likes}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -41,9 +41,15 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Get like count
+	count, err := rt.db.GetLikeCount(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikeCount: failed to get like Count from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var response = GetCountResult{Count: 6}
+	var response = GetCountResult{Count: count}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -56,21 +62,33 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	lid := ps.ByName("lid")
-	if !ValidId(lid) {
-		rt.baseLogger.Error("LikeId (lid) invalid")
+	uid := ps.ByName("uid")
+	if !ValidUid(uid) {
+		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Create new like in db
+	err := rt.db.Like(pid, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("LikePost: failed to insert like into db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Increment posts like count
+	err = rt.db.IncrementLikeCount(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("LikePost: failed to update posts like count in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (rt *_router) DeleteLike(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
 	if !ValidId(pid) {
@@ -78,15 +96,27 @@ func (rt *_router) DeleteLike(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	lid := ps.ByName("lid")
-	if !ValidId(lid) {
-		rt.baseLogger.Error("LikeId (lid) invalid")
+	uid := ps.ByName("uid")
+	if !ValidUid(uid) {
+		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Delete like from db
+	err := rt.db.Unlike(pid, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("UnikePost: failed to delete like from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Decrement posts like count
+	err = rt.db.DecrementLikeCount(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("UnikePost: failed to update posts like count in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)

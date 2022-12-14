@@ -8,7 +8,7 @@ func (db *appdbimpl) Follow(uid string, fid string) error {
 }
 
 func (db *appdbimpl) Unfollow(uid string, fid string) error {
-	_, err := db.c.Exec("IDELETE FROM followers WHERE userId = ? AND followersId = ?", uid, fid)
+	_, err := db.c.Exec("DELETE FROM followers WHERE userId = ? AND followerId = ?", uid, fid)
 	return err
 }
 

@@ -32,8 +32,20 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 	}
 
 	// Insert into db
-	cid := "tesCID"
+	comment.PostId = pid
+	cid, err := rt.db.InsertComment(comment)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreateComment: failed to insert comment into db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Increment posts comment count
+	err = rt.db.IncrementCommentCount(comment.PostId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreateComment: failed to update posts comment count in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	var response = CreateCommentResponse{CommentId: cid}
@@ -52,16 +64,15 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// Get comments from db
+	comments, err := rt.db.GetComments(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetComments: failed to get comments from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var comments = make([]schemes.Comment, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		var c = schemes.Comment{Poster: u, PostId: "pid", DateTime: "datetime", Comment: "commenting..."}
-		comments = append(comments, c)
-	}
-	var response = schemes.CommentList{Length: length, Comments: comments}
+	var response = schemes.CommentList{Length: len(comments), Comments: comments}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -76,9 +87,15 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	// Get count of comments from db
+	count, err := rt.db.GetCommentCount(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetCommentCOunt: failed to get comment count from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
-	var response = GetCountResult{Count: 7}
+	var response = GetCountResult{Count: count}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -93,13 +110,25 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 	}
 	cid := ps.ByName("cid")
 	if !ValidId(cid) {
-		rt.baseLogger.Error("PostId (pid) invalid")
+		rt.baseLogger.Error("CommentId (cid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Delete comment from db
+	err := rt.db.DeleteComment(cid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeleteComment: failed to delete comment from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Decrement comment count on post
+	err = rt.db.DecrementCommentCount(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetComments: failed to update posts comment count in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Send the response
 	w.WriteHeader(http.StatusNoContent)

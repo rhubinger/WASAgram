@@ -32,11 +32,31 @@ func (db *appdbimpl) GetUser(uid string) (schemes.User, error) {
 
 func (db *appdbimpl) SearchUser(searchString string, uid string) ([]schemes.User, error) {
 	searchString = "%" + searchString + "%"
-	rows, err := db.c.Query(`
-	WITH matches AS
+	rows, err := db.c.Query(`SELECT userId, name, posts, followers, followed
+	FROM users 
+	WHERE userId LIKE ? OR name LIKE ?`, searchString, searchString, uid, uid, uid, uid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := []schemes.User{}
+	for rows.Next() {
+		u := schemes.User{}
+		err = rows.Scan(&u.UserId, &u.Name, &u.Posts, &u.Followers, &u.Followed)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, u)
+	}
+	return result, nil
+}
+
+/* Better query but has bug which needs to be figured out (shows no results when it should be)
+`WITH matches AS
 	(
 		SELECT userId, name, posts, followers, followed
-		FROM users 
+		FROM users
 		WHERE userId LIKE ? OR name LIKE ?
 	),
 	relevance AS
@@ -66,20 +86,5 @@ func (db *appdbimpl) SearchUser(searchString string, uid string) ([]schemes.User
 	FROM matches m, relevance r
 	WHERE m.userId = r.searched
 	GROUP BY m.userId
-	ORDER BY MAX(r.relevance) DESC, followers DESC`, searchString, searchString, uid, uid, uid, uid)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	result := []schemes.User{}
-	for rows.Next() {
-		u := schemes.User{}
-		err = rows.Scan(&u.UserId, &u.Name, &u.Posts, &u.Followers, &u.Followed)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, u)
-	}
-	return result, nil
-}
+	ORDER BY MAX(r.relevance) DESC, followers DESC`
+*/

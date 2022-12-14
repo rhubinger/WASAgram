@@ -46,7 +46,7 @@ type AppDatabase interface {
 	GetIdentifier(uid string) (string, error)
 	UpdateUsername(name string, uid string) error
 	GetUser(uid string) (schemes.User, error)
-	SearchUser(searchString string, searchType string) ([]schemes.User, error)
+	SearchUser(searchString string, uid string) ([]schemes.User, error)
 
 	// Posts
 	InsertPost(post schemes.Post) (string, error)

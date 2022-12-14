@@ -839,11 +839,11 @@ components:
     followerId:
       schema:
         type: string
-        pattern: "[a-zA-z0-9-_]{11}"
-        example: "gocwRvLhDf8"
+        pattern: "@[a-zA-z0-9_.]{3,16}"
+        example: "@Konrad_Zuse"
         readOnly: true
-        minLength: 11
-        maxLength: 11
+        minLength: 3
+        maxLength: 16
       name: fid
       in: path
       required: true
@@ -851,11 +851,11 @@ components:
     bannedId:
       schema:
         type: string
-        pattern: "[a-zA-z0-9-_]{11}"
-        example: "gocwRvLhDf8"
+        pattern: "@[a-zA-z0-9_.]{3,16}"
+        example: "@John_Backus"
         readOnly: true
-        minLength: 11
-        maxLength: 11
+        minLength: 3
+        maxLength: 16
       name: bid
       in: path
       required: true
@@ -913,7 +913,7 @@ components:
           description: "The name of the user"
           type: string
           pattern: "[a-zA-z0-9-. ]{1,30}"
-          example: "Konrad Zuse"
+          example: "Alan Turing"
           minLength: 1
           maxLength: 30
         posts:

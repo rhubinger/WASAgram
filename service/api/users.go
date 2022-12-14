@@ -58,10 +58,10 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	searchType := r.URL.Query().Get("type")
+	uid := r.URL.Query().Get("uid")
 
 	// Search user in db
-	users, err := rt.db.SearchUser(searchString, searchType)
+	users, err := rt.db.SearchUser(searchString, uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("SearchUser: no users found in db")
 		w.WriteHeader(http.StatusNotFound)
@@ -104,17 +104,16 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 	}
 
 	// Get the profiles posts in reverse chronological order
+	posts, err := rt.db.GetPosts(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPosts: error while getting users posts")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var contentStream = make([]schemes.Post, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		var p = schemes.Post{Poster: u, DateTime: "10-12-2022", Caption: "caption", PictureId: "pid", Likes: 3, Comments: 4}
-		contentStream = append(contentStream, p)
-	}
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(contentStream)
+	_ = json.NewEncoder(w).Encode(posts)
 }
 
 func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -127,9 +126,15 @@ func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Get count of posts
+	count, err := rt.db.GetPostCount(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPostCount: error while getting post count from db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	// Send the response
-	var response = GetCountResult{Count: 4}
+	var response = GetCountResult{Count: count}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -144,17 +149,16 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Get the users stream in reverse chronological order
+	stream, err := rt.db.GetStream(uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetStream: error while getting posts from db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	// Send the response
-	var length = 3
-	var contentStream = make([]schemes.Post, 0, length)
-	for i := 0; i < length; i++ {
-		var u = schemes.User{UserId: "uid", Name: "Konrad Zuse", Posts: 5, Followers: 1783, Followed: 1}
-		var p = schemes.Post{Poster: u, DateTime: "10-12-2022", Caption: "caption", PictureId: "pid", Likes: 3, Comments: 4}
-		contentStream = append(contentStream, p)
-	}
 	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(contentStream)
+	_ = json.NewEncoder(w).Encode(stream)
 }
 
 func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
