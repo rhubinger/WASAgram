@@ -35,14 +35,14 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		log.Println(err)
 	}
 
-	// Insert post in db
 	// Insert image in db
-	pid, err := rt.db.InsertPicture(fileBytes) // TODO change to proper id
+	pid, err := rt.db.InsertPicture(fileBytes)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Failed to insert picture in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// Insert post in db
 	// Increment posts in user
 
 	// Send the response

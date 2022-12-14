@@ -1,8 +1,6 @@
 package database
 
 import (
-	"database/sql"
-
 	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
@@ -32,25 +30,43 @@ func (db *appdbimpl) GetUser(uid string) (schemes.User, error) {
 	return u, err
 }
 
-func (db *appdbimpl) SearchUser(searchString string, searchType string) ([]schemes.User, error) {
-	// TODO maybe order results by relevance somehow
-	var err error
-	var rows *sql.Rows
+func (db *appdbimpl) SearchUser(searchString string, uid string) ([]schemes.User, error) {
 	searchString = "%" + searchString + "%"
-	switch searchType {
-	case "uid":
-		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed 
-								FROM users 
-								WHERE userId LIKE ?;`, searchString)
-	case "name":
-		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed 
-								FROM users 
-								WHERE name LIKE ?;`, searchString)
-	default:
-		rows, err = db.c.Query(`SELECT userId, name, posts, followers, followed
-								FROM users 
-								WHERE userId LIKE ? OR name LIKE ?;`, searchString, searchString)
-	}
+	rows, err := db.c.Query(`
+	WITH matches AS
+	(
+		SELECT userId, name, posts, followers, followed
+		FROM users 
+		WHERE userId LIKE ? OR name LIKE ?
+	),
+	relevance AS
+	(
+		WITH contacts AS
+		(
+			SELECT f.followerId AS user, f.userId AS contact
+			FROM followers f
+			UNION
+			SELECT f.userId AS user, f.followerId AS contact
+			FROM followers f
+		)
+			SELECT ?, u.userId as searched, 0 as relevance
+			FROM users u
+			WHERE u.userId != ?
+		UNION
+			SELECT c.user as searcher, c.contact as searched, 2147483647 as relevance --MAXINT
+			FROM contacts c
+			WHERE c.user = ?
+		UNION
+			SELECT c1.user as searcher, c2.user as searched, COUNT(c2.user) as relevance
+			FROM contacts c1, contacts c2
+			WHERE c1.user = ? AND c1.contact = c2.contact AND NOT c1.user = c2.user
+			GROUP BY c2.user
+	)
+	SELECT userId, name, posts, followers, followed, relevance
+	FROM matches m, relevance r
+	WHERE m.userId = r.searched
+	GROUP BY m.userId
+	ORDER BY MAX(r.relevance) DESC, followers DESC`, searchString, searchString, uid, uid, uid, uid)
 	if err != nil {
 		return nil, err
 	}

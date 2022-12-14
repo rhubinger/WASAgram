@@ -9,7 +9,7 @@ func (rt *_router) Handler() http.Handler {
 	// Register routes
 	// Users
 	rt.router.POST("/login", rt.Login)
-	rt.router.GET("/searchresult", rt.SearchUser)
+	rt.router.GET("/search", rt.SearchUser)
 	rt.router.GET("/users/:uid", rt.GetUser)
 	rt.router.GET("/users/:uid/posts", rt.GetPosts)
 	rt.router.GET("/users/:uid/posts/count", rt.GetPostCount)
@@ -41,7 +41,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/posts/:pid/likes/:lid", rt.LikePost)
 	rt.router.DELETE("/posts/:pid/likes/:lid", rt.DeleteLike)
 
-	// Comments // TODO delete comment call for single comment
+	// Comments
 	rt.router.PUT("/posts/:pid/comments", rt.CreateComment)
 	rt.router.GET("/posts/:pid/comments", rt.GetComments)
 	rt.router.GET("/posts/:pid/comments/count", rt.GetCommentCount)

@@ -56,18 +56,18 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "500": { $ref: "#/components/responses/InternalServerError" }
   
-  /searchresult:
+  /search:
     parameters:
       - $ref: "#/components/parameters/searchString"
-      - $ref: "#/components/parameters/searchType"
+      - $ref: "#/components/parameters/queryUserId"
     get:
       tags: ["Users"]
       summary: Search for a user
       description: |
-        Searches for a user by userId or name.
+        Searches for a user.
         The searchstring parameter is the string that should match the searched users userId or name.
-        The optional parameter searchType defines wheter the searchString is a userId (uid) or a name.
-        Returns a list of user objects which fit the search parameters.
+        The searching users user Id (uid) must be passed as parameter uid.
+        Returns a list of user objects which fit the search parameters ordered by relevance to the searching user.
       security:
         - bearerAuth: []
       responses:
@@ -748,15 +748,18 @@ components:
       name: searchString
       in: query
       required: true
-      description: The searchString is the information which should identify the user.
-    searchType:
+      description: The searchString is a part of either the searched users user id or name
+    queryUserId:
       schema:
         type: string
-        enum: [uid, name]
-      name: searchType
-      in: query
-      required: false
-      description: The searchType describes the type of the searchString (uid, name)
+        pattern: "@[a-zA-z0-9_.]{3,16}"
+        example: "@Alan_Turing"
+        minLength: 3
+        maxLength: 16
+      name: uid
+      in: path
+      required: true
+      description: The userId (uid) of the searching user
     userId:
       schema:
         type: string

@@ -36,7 +36,8 @@ func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed, 
 							   p.uploadTime, p.caption, p.pictureId, p.likes, p.comments 
 							 FROM users u, followers f, posts p
-							 WHERE u.userId = f.userId AND u.userId = p.userId AND f.followerId = "user3";`, uid)
+							 WHERE u.userId = f.userId AND u.userId = p.userId AND f.followerId = ?
+							 ORDER BY p.uploadTime DESC;`, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,8 @@ func (db *appdbimpl) GetPosts(uid string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed, 
 							   p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
 							 FROM users u , posts p
-							 WHERE u.userId = p.userId AND u.userId = ?`, uid)
+							 WHERE u.userId = p.userId AND u.userId = ?
+							 ORDER BY p.uploadTime DESC;`, uid)
 	if err != nil {
 		return nil, err
 	}
