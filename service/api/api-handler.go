@@ -4,10 +4,6 @@ import (
 	"net/http"
 )
 
-// TODO assure better return codes
-// TODO implement security
-// TODO assure user and commentlist max lengths
-
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
 	// Register routes
