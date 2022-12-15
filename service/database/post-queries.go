@@ -5,7 +5,7 @@ import "github.com/rhubinger/WASAgram/service/schemes"
 func (db *appdbimpl) InsertPost(post schemes.Post) (string, error) {
 	pid := db.GenerateId("postId")
 	_, err := db.c.Exec("INSERT INTO posts VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?);",
-		pid, post.Poster.UserId, post.Caption, post.PictureId, post.Likes, post.Comments)
+		pid, post.UserId, post.Caption, post.PictureId, post.Likes, post.Comments)
 	return pid, err
 }
 
@@ -23,20 +23,17 @@ func (db *appdbimpl) GetPictureId(pid string) (string, error) {
 
 func (db *appdbimpl) GetPost(pid string) (schemes.Post, error) {
 	var p schemes.Post
-	err := db.c.QueryRow(`SELECT u.userId, u.name, u.posts, u.followers, u.followed, 
-							p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
-						  FROM users u , posts p
-						  WHERE u.userId = p.userId AND p.postId = ?`,
-		pid).Scan(&p.Poster.UserId, &p.Poster.Name, &p.Poster.Posts, &p.Poster.Followers, &p.Poster.Followed,
-		&p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
+	err := db.c.QueryRow(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
+						  FROM posts p, users u
+						  WHERE p.userId = u.usersId AND p.postId = ?`,
+		pid).Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
 	return p, err
 }
 
 func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
-	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed, 
-							   p.uploadTime, p.caption, p.pictureId, p.likes, p.comments 
-							 FROM users u, followers f, posts p
-							 WHERE u.userId = f.userId AND u.userId = p.userId AND f.followerId = ?
+	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
+							 FROM followers f, posts p, users u
+							 WHERE f.userId = p.userId AND p.userId = u.userId AND f.followerId = ?
 							 ORDER BY p.uploadTime DESC;`, uid)
 	if err != nil {
 		return nil, err
@@ -46,8 +43,7 @@ func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
 	posts := []schemes.Post{}
 	for rows.Next() {
 		p := schemes.Post{}
-		err = rows.Scan(&p.Poster.UserId, &p.Poster.Name, &p.Poster.Posts, &p.Poster.Followers, &p.Poster.Followed,
-			&p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
+		err = rows.Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
 		if err != nil {
 			return nil, err
 		}
@@ -58,10 +54,9 @@ func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
 }
 
 func (db *appdbimpl) GetPosts(uid string) ([]schemes.Post, error) {
-	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed, 
-							   p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
-							 FROM users u , posts p
-							 WHERE u.userId = p.userId AND u.userId = ?
+	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
+							 FROM posts p, users u
+							 WHERE p.userId = p.userId AND p.userId = ?
 							 ORDER BY p.uploadTime DESC;`, uid)
 	if err != nil {
 		return nil, err
@@ -71,8 +66,7 @@ func (db *appdbimpl) GetPosts(uid string) ([]schemes.Post, error) {
 	posts := []schemes.Post{}
 	for rows.Next() {
 		p := schemes.Post{}
-		err = rows.Scan(&p.Poster.UserId, &p.Poster.Name, &p.Poster.Posts, &p.Poster.Followers, &p.Poster.Followed,
-			&p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
+		err = rows.Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
 		if err != nil {
 			return nil, err
 		}

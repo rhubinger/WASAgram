@@ -951,9 +951,27 @@ components:
       type: object
       description: "The metadata of a post containing the pictureId (pid)"
       properties:
-        poster:
-          description: "The posting user"
-          $ref: "#/components/schemas/user"
+        postId:
+          description: "The id of the post"
+          type: string
+          pattern: "[a-zA-z0-9-_]{11}"
+          example: "gocwRvLhDf8"
+          minLength: 11
+          maxLength: 11
+        userId:
+          description: "The userId of the poster"
+          type: string
+          pattern: "@[a-zA-z0-9_.]{3,16}"
+          example: "@Alan_Turing"
+          minLength: 3
+          maxLength: 16
+        username:
+          description: "The username of the poster"
+          type: string
+          pattern: "[a-zA-z0-9-. ]{1,30}"
+          example: "Alan Turing"
+          minLength: 1
+          maxLength: 30
         date-time:
           description: "The time of the posts creation"
           type: string
@@ -990,23 +1008,25 @@ components:
       type: object
       properties:
         post:
-          description: "The wrapped post"
           $ref: "#/components/schemas/post"
     contentStream:
       description: "An array of posts"
       type: array
       minItems: 1
       maxItems: 60
-      items: 
-        description: "A post"
+      items:
         $ref: "#/components/schemas/post" 
     comment:
       description: "A comment made on a post"
       type: object
       properties:
-        poster:
-          description: "The posting user"
-          $ref: "#/components/schemas/user"
+        commentId:
+          description: "The id of the comment"
+          type: string
+          pattern: "[a-zA-z0-9-_]{11}"
+          example: "gocwRvLhDf8"
+          minLength: 11
+          maxLength: 11
         postId:
           description: "The postId of the comments post"
           type: string
@@ -1014,6 +1034,20 @@ components:
           example: "gocwRvLhDf8"
           minLength: 11
           maxLength: 11
+        userId:
+          description: "The userId of the poster"
+          type: string
+          pattern: "@[a-zA-z0-9_.]{3,16}"
+          example: "@Alan_Turing"
+          minLength: 3
+          maxLength: 16
+        username:
+          description: "The username of the poster"
+          type: string
+          pattern: "[a-zA-z0-9-. ]{1,30}"
+          example: "Alan Turing"
+          minLength: 1
+          maxLength: 30
         date-time:
           description: "The time of the comments upload"
           type: string
@@ -1042,8 +1076,7 @@ components:
           type: array
           minItems: 1
           maxItems: 100
-          items: 
-            description: "A comment"
+          items:
             $ref: "#/components/schemas/comment"
         
   responses:

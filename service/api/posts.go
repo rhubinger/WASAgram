@@ -53,7 +53,7 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	// Increment posts in user
-	err = rt.db.IncrementPostCount(metadata.Poster.UserId)
+	err = rt.db.IncrementPostCount(metadata.UserId)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Failed to increment post count of posting user in db")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -133,7 +133,7 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 	// Decrement post count from user
-	err = rt.db.DecrementPostCount(post.Poster.UserId)
+	err = rt.db.DecrementPostCount(post.UserId)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("DeletePost: failed to decrement the posters post count in db")
 		w.WriteHeader(http.StatusInternalServerError)

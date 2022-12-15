@@ -89,7 +89,7 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 	// Get count of comments from db
 	count, err := rt.db.GetCommentCount(pid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetCommentCOunt: failed to get comment count from db")
+		rt.baseLogger.WithError(err).Error("GetCommentCount: failed to get comment count from db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -125,7 +125,7 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 	// Decrement comment count on post
 	err = rt.db.DecrementCommentCount(pid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetComments: failed to update posts comment count in db")
+		rt.baseLogger.WithError(err).Error("DeleteComment: failed to update posts comment count in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -52,7 +52,9 @@ func (s *UserList) Valid() bool {
 
 // Post related structs
 type Post struct {
-	Poster    User   `json:"poster"`
+	PostId    string `json:"postId"`
+	UserId    string `json:"userId"`
+	Username  string `json:"username"`
 	DateTime  string `json:"date-time"`
 	Caption   string `json:"caption"`
 	PictureId string `json:"pictureId"`
@@ -61,33 +63,67 @@ type Post struct {
 }
 
 func (s *Post) Valid() bool {
+	correctPostIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PictureId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	correctUidPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", s.UserId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	correctUsernamePattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", s.UserId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
 	correctDateTimePattern, err := regexp.MatchString("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", s.DateTime)
 	if err != nil {
 		os.Stderr.WriteString(err.Error())
 		return false
 	}
-	correctPicturePattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PictureId)
+	correctPictureIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PictureId)
 	if err != nil {
 		os.Stderr.WriteString(err.Error())
 		return false
 	}
-	return s.Poster.Valid() &&
+	return len(s.PostId) == 11 && correctPostIdPattern &&
+		len(s.UserId) >= 3 && len(s.UserId) <= 16 && correctUidPattern &&
+		len(s.Username) >= 1 && len(s.Username) <= 30 && correctUsernamePattern &&
 		len(s.DateTime) == 19 && correctDateTimePattern &&
 		len(s.Caption) >= 1 && len(s.Caption) <= 140 &&
-		len(s.PictureId) == 11 && correctPicturePattern &&
+		len(s.PictureId) == 11 && correctPictureIdPattern &&
 		s.Likes >= 0 &&
 		s.Comments >= 0
 }
 
 // Comment related structs
 type Comment struct {
-	Poster   User   `json:"poster"`
-	PostId   string `json:"postId"`
-	DateTime string `json:"date-time"`
-	Comment  string `json:"comment"`
+	CommentId string `json:"commentId"`
+	PostId    string `json:"postId"`
+	UserId    string `json:"userId"`
+	Username  string `json:"username"`
+	DateTime  string `json:"date-time"`
+	Comment   string `json:"comment"`
 }
 
 func (s *Comment) Valid() bool {
+	correctCommentIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.CommentId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	correctUidPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", s.UserId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	correctUsernamePattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", s.UserId)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
 	correctPostIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PostId)
 	if err != nil {
 		os.Stderr.WriteString(err.Error())
@@ -98,8 +134,10 @@ func (s *Comment) Valid() bool {
 		os.Stderr.WriteString(err.Error())
 		return false
 	}
-	return s.Poster.Valid() &&
+	return len(s.CommentId) == 11 && correctCommentIdPattern &&
 		len(s.PostId) == 11 && correctPostIdPattern &&
+		len(s.UserId) >= 3 && len(s.UserId) <= 16 && correctUidPattern &&
+		len(s.Username) >= 1 && len(s.Username) <= 30 && correctUsernamePattern &&
 		len(s.DateTime) == 19 && correctDateTimePattern &&
 		len(s.Comment) >= 1 && len(s.Comment) <= 140
 }
