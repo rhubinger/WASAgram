@@ -19,15 +19,19 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// Get list of followed
-	followers, err := rt.db.GetFollowed(uid)
+	followed, err := rt.db.GetFollowed(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetFollowed: error while getting followed users from db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	// Shorten if too many followed
+	if len(followed) > 1000 {
+		followed = followed[0:1000]
+	}
 
 	// Send the response
-	var response = schemes.UserList{Length: len(followers), Users: followers}
+	var response = schemes.UserList{Length: len(followed), Users: followed}
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -70,6 +74,10 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 		rt.baseLogger.WithError(err).Error("GetFollowers: error while getting followers from db")
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+	// Shorten if too many followers
+	if len(followers) > 1000 {
+		followers = followers[0:1000]
 	}
 
 	// Send the response

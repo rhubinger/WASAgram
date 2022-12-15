@@ -70,6 +70,10 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// Shorten if too many comments
+	if len(comments) > 1000 {
+		comments = comments[0:1000]
+	}
 
 	// Send the response
 	var response = schemes.CommentList{Length: len(comments), Comments: comments}

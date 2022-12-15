@@ -54,8 +54,8 @@ type AppDatabase interface {
 
 	GetPictureId(pid string) (string, error)
 	GetPost(pid string) (schemes.Post, error)
-	GetStream(uid string) ([]schemes.Post, error)
-	GetPosts(uid string) ([]schemes.Post, error)
+	GetStream(uid string, dateTime string) ([]schemes.Post, error)
+	GetPosts(uid string, dateTime string) ([]schemes.Post, error)
 	GetPostCount(uid string) (int, error)
 	IncrementPostCount(uid string) error
 	DecrementPostCount(uid string) error

@@ -20,7 +20,8 @@ func (db *appdbimpl) DeleteLikes(pid string) error {
 func (db *appdbimpl) GetLikes(pid string) ([]schemes.User, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed 
 							 FROM users u, likes l
-							 WHERE u.userId = l.userId AND l.postId = ?;`, pid)
+							 WHERE u.userId = l.userId AND l.postId = ?
+							 ORDER BY u.name DESC;`, pid)
 	if err != nil {
 		return nil, err
 	}

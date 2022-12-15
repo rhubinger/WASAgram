@@ -24,6 +24,10 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// Shorten if too many followed
+	if len(likes) > 1000 {
+		likes = likes[0:1000]
+	}
 
 	// Send the response
 	var response = schemes.UserList{Length: len(likes), Users: likes}

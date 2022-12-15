@@ -50,15 +50,24 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 	// Parse Parameters
 	searchString := r.URL.Query().Get("searchString")
 	if searchString == "" {
-		rt.baseLogger.Error("Failed to parse SearchString")
+		rt.baseLogger.Error("SearchUser: Failed to parse SearchString")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if !schemes.ValidSearchString(searchString) {
-		rt.baseLogger.Error("SearchString is formated incorrectly")
+		rt.baseLogger.Error("SearchUser: SearchString is formated incorrectly")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	uid := r.URL.Query().Get("uid")
+	if uid == "" {
+		rt.baseLogger.Error("SearchUser: Failed to parse uid")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if !schemes.ValidUserId(uid) {
+		rt.baseLogger.Error("SearchUser: uid is formated incorrectly")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Search user in db
 	users, err := rt.db.SearchUser(searchString, uid)
@@ -96,19 +105,34 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 }
 
 func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Parse parameters
 	uid := ps.ByName("uid")
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	dateTime := r.URL.Query().Get("dateTime")
+	if dateTime == "" {
+		rt.baseLogger.Error("SearchUser: Failed to parse dateTime")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if !schemes.ValidDatetime(dateTime) {
+		rt.baseLogger.Error("GetPosts: dateTime is formated incorrectly")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Get the profiles posts in reverse chronological order
-	posts, err := rt.db.GetPosts(uid)
+	posts, err := rt.db.GetPosts(uid, dateTime)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetPosts: error while getting users posts")
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+	// Shorten if too many posts
+	if len(posts) > 12 {
+		posts = posts[0:12]
 	}
 
 	// Send the response
@@ -147,13 +171,27 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	dateTime := r.URL.Query().Get("dateTime")
+	if dateTime == "" {
+		rt.baseLogger.Error("SearchUser: Failed to parse dateTime")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if !schemes.ValidDatetime(dateTime) {
+		rt.baseLogger.Error("GetPosts: dateTime is formated incorrectly")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Get the users stream in reverse chronological order
-	stream, err := rt.db.GetStream(uid)
+	stream, err := rt.db.GetStream(uid, dateTime)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetStream: error while getting posts from db")
 		w.WriteHeader(http.StatusNotFound)
 		return
+	}
+	// Shorten if too many posts
+	if len(stream) > 12 {
+		stream = stream[0:12]
 	}
 
 	// Send the response

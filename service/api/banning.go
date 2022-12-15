@@ -25,6 +25,10 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	// Shorten if too many banned
+	if len(banned) > 1000 {
+		banned = banned[0:1000]
+	}
 
 	// Send the response
 	var response = schemes.UserList{Length: len(banned), Users: banned}

@@ -15,7 +15,8 @@ func (db *appdbimpl) Unban(uid string, bid string) error {
 func (db *appdbimpl) GetBanned(uid string) ([]schemes.User, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed 
 							 FROM users u, bans b 
-							 WHERE u.userId = b.bannedId AND b.userId = ?;`, uid)
+							 WHERE u.userId = b.bannedId AND b.userId = ?
+							 ORDER BY u.name DESC;`, uid)
 	if err != nil {
 		return nil, err
 	}

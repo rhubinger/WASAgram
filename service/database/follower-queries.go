@@ -15,7 +15,8 @@ func (db *appdbimpl) Unfollow(uid string, fid string) error {
 func (db *appdbimpl) GetFollowers(uid string) ([]schemes.User, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed 
 							 FROM users u, followers f
-							 WHERE u.userId = f.followerId AND f.userId = ?;`, uid)
+							 WHERE u.userId = f.followerId AND f.userId = ?
+							 ORDER BY u.name DESC;`, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,8 @@ func (db *appdbimpl) DecrementFollowerCount(uid string) error {
 func (db *appdbimpl) GetFollowed(uid string) ([]schemes.User, error) {
 	rows, err := db.c.Query(`SELECT u.userId, u.name, u.posts, u.followers, u.followed 
 							 FROM users u, followers f
-							 WHERE u.userId = f.userId AND f.followerId = ?;`, uid)
+							 WHERE u.userId = f.userId AND f.followerId = ?
+							 ORDER BY u.name DESC;`, uid)
 	if err != nil {
 		return nil, err
 	}

@@ -30,11 +30,11 @@ func (db *appdbimpl) GetPost(pid string) (schemes.Post, error) {
 	return p, err
 }
 
-func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
+func (db *appdbimpl) GetPosts(uid string, dateTime string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
-							 FROM followers f, posts p, users u
-							 WHERE f.userId = p.userId AND p.userId = u.userId AND f.followerId = ?
-							 ORDER BY p.uploadTime DESC;`, uid)
+							 FROM posts p, users u
+							 WHERE p.userId = p.userId AND p.userId = ? AND p.uploadTime < ?
+							 ORDER BY p.uploadTime DESC;`, uid, dateTime)
 	if err != nil {
 		return nil, err
 	}
@@ -53,11 +53,11 @@ func (db *appdbimpl) GetStream(uid string) ([]schemes.Post, error) {
 	return posts, err
 }
 
-func (db *appdbimpl) GetPosts(uid string) ([]schemes.Post, error) {
+func (db *appdbimpl) GetStream(uid string, dateTime string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
-							 FROM posts p, users u
-							 WHERE p.userId = p.userId AND p.userId = ?
-							 ORDER BY p.uploadTime DESC;`, uid)
+							 FROM followers f, posts p, users u
+							 WHERE f.userId = p.userId AND p.userId = u.userId AND f.followerId = ? AND p.uploadTime < ?
+							 ORDER BY p.uploadTime DESC;`, uid, dateTime)
 	if err != nil {
 		return nil, err
 	}

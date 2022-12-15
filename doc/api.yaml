@@ -113,12 +113,14 @@ paths:
   /users/{uid}/posts:
     parameters:
       - $ref: "#/components/parameters/userId"
+      - $ref: "#/components/parameters/dateTime"
     get:
       tags: ["Users"]
       operationId: getUserProfile
-      summary: Get the posts of a user
+      summary: Get the post from the user with userId uid before the timepoint dateTime
       description: |
-        Obtain users the posts of the user with userId uid in reverse chronological order.
+        Obtain the latest posts of the user with userId uid in reverse chronological order.
+        If the query parameter dateTime is specified only posts before the dateTime will be returned.
       security:
         - bearerAuth: []
       responses:
@@ -142,7 +144,8 @@ paths:
       operationId: getPostCount
       summary: Get the number of posts
       description: |
-        Obtain the number of posts made by the user with the userId uid
+        Obtain the latest posts of the accounts, the user with userId uid follows in reverse chronological order.
+        If the query parameter dateTime is specified only posts before the dateTime will be returned.
       security:
         - bearerAuth: []
       responses:
@@ -802,29 +805,6 @@ paths:
                   
 components:
   parameters:
-    searchString:
-      schema:
-        type: string
-        pattern: "[@a-zA-z0-9-_]{1,30}"
-        example: "Alan_Turing"
-        readOnly: true
-        minLength: 1
-        maxLength: 30
-      name: searchString
-      in: query
-      required: true
-      description: The searchString is a part of either the searched users user id or name
-    queryUserId:
-      schema:
-        type: string
-        pattern: "@[a-zA-z0-9_.]{3,16}"
-        example: "@Alan_Turing"
-        minLength: 3
-        maxLength: 16
-      name: uid
-      in: query
-      required: true
-      description: The userId (uid) of the searching user
     userId:
       schema:
         type: string
@@ -896,6 +876,41 @@ components:
       in: path
       required: true
       description: The pictureId (pid) is a string, that uniquely identifies the picture of a post.
+    searchString:
+      schema:
+        type: string
+        pattern: "[@a-zA-z0-9-_]{1,30}"
+        example: "Alan_Turing"
+        readOnly: true
+        minLength: 1
+        maxLength: 30
+      name: searchString
+      in: query
+      required: true
+      description: The searchString is a part of either the searched users user id or name
+    queryUserId:
+      schema:
+        type: string
+        pattern: "@[a-zA-z0-9_.]{3,16}"
+        example: "@Alan_Turing"
+        minLength: 3
+        maxLength: 16
+      name: uid
+      in: query
+      required: true
+      description: The userId (uid) of the searching user
+    dateTime:
+      schema:
+        type: string
+        pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}"
+        example: "2000-09-11 11:59:37"
+        readOnly: true
+        minLength: 19
+        maxLength: 19
+      name: dateTime
+      in: query
+      required: false
+      description: DateTime are a date and a time which describe a point in time.
   
   schemas:
     user:
@@ -1013,7 +1028,7 @@ components:
       description: "An array of posts"
       type: array
       minItems: 1
-      maxItems: 60
+      maxItems: 12
       items:
         $ref: "#/components/schemas/post" 
     comment:
@@ -1075,7 +1090,7 @@ components:
           description: "The list of comments"
           type: array
           minItems: 1
-          maxItems: 100
+          maxItems: 1000
           items:
             $ref: "#/components/schemas/comment"
         

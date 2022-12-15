@@ -22,7 +22,8 @@ func (db *appdbimpl) DeleteComments(pid string) error {
 func (db *appdbimpl) GetComments(pid string) ([]schemes.Comment, error) {
 	rows, err := db.c.Query(`SELECT c.commentId, c.postId, u.name, c.userId, c.uploadTime, c.commentText
 							 FROM comments c, users u
-							 WHERE c.userId = u.userId AND c.postId = ?;`, pid)
+							 WHERE c.userId = u.userId AND c.postId = ?
+							 ORDER BY c.uploadTime DESC;`, pid)
 	if err != nil {
 		return nil, err
 	}
