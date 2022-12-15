@@ -51,31 +51,3 @@ type CreatePostResponse struct {
 type CreateCommentResponse struct {
 	CommentId string `json:"commentId"`
 }
-
-// Validity Checker for Parameters
-func ValidUid(uid string) bool {
-	correctPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", uid)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(uid) >= 3 && len(uid) <= 16 && correctPattern
-}
-
-func ValidId(id string) bool {
-	correctPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", id)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(id) == 11 && correctPattern
-}
-
-func ValidSearchString(searchString string) bool {
-	correctPattern, err := regexp.MatchString("[@a-zA-z0-9-_.]{1,30}", searchString)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(searchString) >= 1 && len(searchString) <= 30 && correctPattern
-}

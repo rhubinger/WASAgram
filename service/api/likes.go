@@ -11,7 +11,7 @@ import (
 func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidUserId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -34,7 +34,7 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidUserId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -57,13 +57,13 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidUserId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -91,13 +91,13 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rhubinger/WASAgram/service/schemes"
 )
 
 func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PictureId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

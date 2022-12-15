@@ -11,7 +11,7 @@ import (
 func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -57,7 +57,7 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -80,7 +80,7 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -103,13 +103,13 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	cid := ps.ByName("cid")
-	if !ValidId(cid) {
+	if !schemes.ValidId(cid) {
 		rt.baseLogger.Error("CommentId (cid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

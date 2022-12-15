@@ -12,7 +12,7 @@ import (
 func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -35,7 +35,7 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -58,7 +58,7 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -81,7 +81,7 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -104,13 +104,13 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	fid := ps.ByName("fid")
-	if !ValidUid(fid) {
+	if !schemes.ValidUserId(fid) {
 		rt.baseLogger.Error("FollowerId (fid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -145,13 +145,13 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	fid := ps.ByName("fid")
-	if !ValidUid(fid) {
+	if !schemes.ValidUserId(fid) {
 		rt.baseLogger.Error("FollowerId (fid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

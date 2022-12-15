@@ -53,7 +53,7 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("Failed to parse SearchString")
 		w.WriteHeader(http.StatusBadRequest)
 		return
-	} else if !ValidSearchString(searchString) {
+	} else if !schemes.ValidSearchString(searchString) {
 		rt.baseLogger.Error("SearchString is formated incorrectly")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -76,7 +76,7 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -97,7 +97,7 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 
 func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -119,7 +119,7 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -142,7 +142,7 @@ func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -164,7 +164,7 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

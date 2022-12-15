@@ -69,7 +69,7 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 
 func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -91,7 +91,7 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	pid := ps.ByName("pid")
-	if !ValidId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

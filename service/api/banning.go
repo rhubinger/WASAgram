@@ -12,7 +12,7 @@ import (
 func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -35,7 +35,7 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -58,13 +58,13 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	bid := ps.ByName("bid")
-	if !ValidUid(bid) {
+	if !schemes.ValidUserId(bid) {
 		rt.baseLogger.Error("BannedId (bid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -85,13 +85,13 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")
-	if !ValidUid(uid) {
+	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	bid := ps.ByName("bid")
-	if !ValidUid(bid) {
+	if !schemes.ValidUserId(bid) {
 		rt.baseLogger.Error("BannedId (bid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return

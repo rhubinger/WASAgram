@@ -16,18 +16,8 @@ type User struct {
 }
 
 func (s *User) Valid() bool {
-	correctUidPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", s.UserId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctNamePattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", s.Name)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(s.UserId) >= 3 && len(s.UserId) <= 16 && correctUidPattern &&
-		len(s.Name) >= 1 && len(s.Name) <= 30 && correctNamePattern &&
+	return ValidUserId(s.UserId) &&
+		ValidUsername(s.Name) &&
 		s.Posts >= 0 &&
 		s.Followers >= 0 &&
 		s.Followed >= 0
@@ -63,37 +53,12 @@ type Post struct {
 }
 
 func (s *Post) Valid() bool {
-	correctPostIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PictureId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctUidPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", s.UserId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctUsernamePattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", s.UserId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctDateTimePattern, err := regexp.MatchString("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", s.DateTime)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctPictureIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PictureId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(s.PostId) == 11 && correctPostIdPattern &&
-		len(s.UserId) >= 3 && len(s.UserId) <= 16 && correctUidPattern &&
-		len(s.Username) >= 1 && len(s.Username) <= 30 && correctUsernamePattern &&
-		len(s.DateTime) == 19 && correctDateTimePattern &&
+	return ValidId(s.PostId) &&
+		ValidUserId(s.UserId) &&
+		ValidUsername(s.Username) &&
+		ValidDatetime(s.DateTime) &&
 		len(s.Caption) >= 1 && len(s.Caption) <= 140 &&
-		len(s.PictureId) == 11 && correctPictureIdPattern &&
+		ValidId(s.PictureId) &&
 		s.Likes >= 0 &&
 		s.Comments >= 0
 }
@@ -109,36 +74,11 @@ type Comment struct {
 }
 
 func (s *Comment) Valid() bool {
-	correctCommentIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.CommentId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctUidPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", s.UserId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctUsernamePattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", s.UserId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctPostIdPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", s.PostId)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	correctDateTimePattern, err := regexp.MatchString("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", s.DateTime)
-	if err != nil {
-		os.Stderr.WriteString(err.Error())
-		return false
-	}
-	return len(s.CommentId) == 11 && correctCommentIdPattern &&
-		len(s.PostId) == 11 && correctPostIdPattern &&
-		len(s.UserId) >= 3 && len(s.UserId) <= 16 && correctUidPattern &&
-		len(s.Username) >= 1 && len(s.Username) <= 30 && correctUsernamePattern &&
-		len(s.DateTime) == 19 && correctDateTimePattern &&
+	return ValidId(s.CommentId) &&
+		ValidId(s.PostId) &&
+		ValidUserId(s.UserId) &&
+		ValidUsername(s.Username) &&
+		ValidDatetime(s.DateTime) &&
 		len(s.Comment) >= 1 && len(s.Comment) <= 140
 }
 
@@ -157,4 +97,50 @@ func (s *CommentList) Valid() bool {
 		}
 	}
 	return true
+}
+
+// Validity Checker for Parameters
+func ValidId(id string) bool {
+	correctPattern, err := regexp.MatchString("[a-zA-z0-9-_]{11}", id)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	return len(id) == 11 && correctPattern
+}
+
+func ValidUserId(uid string) bool {
+	correctPattern, err := regexp.MatchString("@[a-zA-z0-9_.]{3,16}", uid)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	return len(uid) >= 3 && len(uid) <= 16 && correctPattern
+}
+
+func ValidUsername(uid string) bool {
+	correctPattern, err := regexp.MatchString("[a-zA-z0-9-. ]{1,30}", uid)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	return len(uid) >= 1 && len(uid) <= 30 && correctPattern
+}
+
+func ValidDatetime(uid string) bool {
+	correctPattern, err := regexp.MatchString("[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", uid)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	return len(uid) == 19 && correctPattern
+}
+
+func ValidSearchString(searchString string) bool {
+	correctPattern, err := regexp.MatchString("[@a-zA-z0-9-_.]{1,30}", searchString)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return false
+	}
+	return len(searchString) >= 1 && len(searchString) <= 30 && correctPattern
 }
