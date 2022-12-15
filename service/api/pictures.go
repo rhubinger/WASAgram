@@ -26,6 +26,10 @@ func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprou
 
 	// Send the response
 	w.Header().Set("Content-Type", "image/png")
-	w.Write(fileBytes)
-	return
+	_, err = w.Write(fileBytes)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPicture: Failed to send picture to user")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

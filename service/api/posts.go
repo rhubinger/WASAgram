@@ -12,11 +12,16 @@ import (
 
 func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse request body
-	r.ParseMultipartForm(100000000) // allows for an Imagesize of ~100MB should be good for 8k pictures
+	err := r.ParseMultipartForm(100000000) // allows for an Imagesize of ~100MB should be good for 8k pictures
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreatePost: Error occured while parsing multipart form")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	// Parse the metadata
 	metadataString := r.FormValue("post")
 	var metadata schemes.Post
-	err := json.Unmarshal([]byte(metadataString), &metadata)
+	err = json.Unmarshal([]byte(metadataString), &metadata)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Request body (JSON) couldn't be parsed")
 		w.WriteHeader(http.StatusBadRequest)

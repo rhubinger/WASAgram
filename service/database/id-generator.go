@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -35,7 +34,6 @@ func (db *appdbimpl) GenerateId(idType string) string {
 	err := db.c.QueryRow("SELECT ? FROM ? WHERE ? == ?", idType, table, idType, id).Scan(&result)
 	for err == nil {
 		id = GenerateRandomString(11)
-		fmt.Println(id)
 		err = db.c.QueryRow("SELECT ? FROM ? WHERE ? == ?", idType, table, idType, id).Scan(&result)
 	}
 
