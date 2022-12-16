@@ -1,7 +1,9 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -26,7 +28,11 @@ func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// Check whether user already exists
 	identifier, err := rt.db.GetIdentifier(request.UserId)
-	if identifier == "" {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		rt.baseLogger.WithError(err).Error("Login: Failed to look up whether user exists db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if identifier == "" {
 		// If user doesn't exist create user
 		name := strings.Replace(request.UserId, "@", "", -1)
 		name = strings.Replace(name, "_", " ", -1)
@@ -42,6 +48,7 @@ func (rt *_router) Login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// Send response (identifier)
 	var response = LoginResult{Identifier: identifier}
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -67,17 +74,25 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("SearchUser: uid is formated incorrectly")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("SearchUser: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("SearchUser: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
-
 	// Search user in db
 	users, err := rt.db.SearchUser(searchString, uid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("SearchUser: no users found in db")
-		w.WriteHeader(http.StatusNotFound)
+		rt.baseLogger.WithError(err).Error("SearchUser: couldn't get search results from db")
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// Send the response
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(users)
 }
@@ -89,17 +104,26 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetUser: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetUser: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Get user from db by uid
 	user, err := rt.db.GetUser(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetUser: Failed to get User from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// Send the response
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(user)
 }
@@ -111,7 +135,16 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetPosts: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetPosts: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+
 	dateTime := r.URL.Query().Get("dateTime")
 	if dateTime == "" {
 		rt.baseLogger.Error("SearchUser: Failed to parse dateTime")
@@ -136,6 +169,7 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 	}
 
 	// Send the response
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(posts)
 }
@@ -147,18 +181,27 @@ func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httpr
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetPostCount: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetPostCount: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Get count of posts
 	count, err := rt.db.GetPostCount(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetPostCount: error while getting post count from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// Send the response
 	var response = GetCountResult{Count: count}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -170,7 +213,16 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetStream: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetStream: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+
 	dateTime := r.URL.Query().Get("dateTime")
 	if dateTime == "" {
 		rt.baseLogger.Error("SearchUser: Failed to parse dateTime")
@@ -195,6 +247,7 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Send the response
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(stream)
 }
@@ -205,6 +258,14 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("ChangeUsername: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("ChangeUsername: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -231,5 +292,5 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Send the response
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusNoContent)
 }

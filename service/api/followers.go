@@ -16,6 +16,14 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetFollowed: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetFollowed: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Get list of followed
@@ -32,6 +40,7 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Send the response
 	var response = schemes.UserList{Length: len(followed), Users: followed}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -42,6 +51,14 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetFollowedCount: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetFollowedCount: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -55,6 +72,7 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 
 	// Send the response
 	var response = GetCountResult{Count: count}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -65,6 +83,14 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetFollowers: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetFollowers: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -82,6 +108,7 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Send the response
 	var response = schemes.UserList{Length: len(followers), Users: followers}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -92,6 +119,14 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetFollowerCount: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetFollowerCount: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -105,6 +140,7 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 
 	// Send the response
 	var response = GetCountResult{Count: count}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -116,11 +152,44 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("Follow: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Follow: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	fid := ps.ByName("fid")
 	if !schemes.ValidUserId(fid) {
 		rt.baseLogger.Error("FollowerId (fid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(fid); err != nil {
+		rt.baseLogger.Error("Follow: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Follow: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Check wheter users want's to follow himself
+	if uid == fid {
+		rt.baseLogger.Error("Follow: Users cant't follow themselves")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Check whether follow allready exists and if so return
+	if followExists, err := rt.db.FollowExists(uid, fid); err != nil {
+		rt.baseLogger.Error("Follow: Error while checking for follow in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if followExists {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -157,32 +226,48 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("Unfollow: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Unfollow: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	fid := ps.ByName("fid")
 	if !schemes.ValidUserId(fid) {
 		rt.baseLogger.Error("FollowerId (fid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(fid); err != nil {
+		rt.baseLogger.Error("Unfollow: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Unfollow: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Insert into db
 	err := rt.db.Unfollow(uid, fid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("Follow: failed to delete follow from db")
+		rt.baseLogger.WithError(err).Error("UnFollow: failed to delete follow from db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	// Update unfollowing users followed count in db
 	err = rt.db.DecrementFollowedCount(fid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("Follow: failed to update unfollowing users followed count in db")
+		rt.baseLogger.WithError(err).Error("Unfollow: failed to update unfollowing users followed count in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	// Update unfollowed users followers count in db
 	err = rt.db.DecrementFollowerCount(uid)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("Follow: failed to update unfollowed users follower count in db")
+		rt.baseLogger.WithError(err).Error("Unfollow: failed to update unfollowed users follower count in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

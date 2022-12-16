@@ -51,6 +51,15 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 	metadata.PictureId = pictureId
 	metadata.Likes = 0
 	metadata.Comments = 0
+	if userExists, err := rt.db.UserExists(metadata.UserId); err != nil {
+		rt.baseLogger.Error("CreatePost: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("CreatePost: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	pid, err := rt.db.InsertPost(metadata)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Create Post: failed insert post (metadata) into db")
@@ -78,6 +87,14 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("GetPost: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("GetPost: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Get post from db
@@ -89,6 +106,7 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	// Send the response
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(post)
 }
@@ -99,6 +117,14 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("DeletePost: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("DeletePost: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

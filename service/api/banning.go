@@ -16,6 +16,14 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetBanned: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetBanned: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	// Get list of banned users by uid
@@ -32,6 +40,7 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// Send the response
 	var response = schemes.UserList{Length: len(banned), Users: banned}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -43,8 +52,15 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("GetBannedCount: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("GetBannedCount: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
-
 	// Get count of banned account
 	count, err := rt.db.GetBannedCount(uid)
 	if err != nil {
@@ -55,6 +71,7 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 
 	// Send the response
 	var response = GetCountResult{Count: count}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -66,11 +83,43 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("Ban: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Ban: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	bid := ps.ByName("bid")
 	if !schemes.ValidUserId(bid) {
 		rt.baseLogger.Error("BannedId (bid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(bid); err != nil {
+		rt.baseLogger.Error("Ban: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Ban: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if uid == bid {
+		rt.baseLogger.Error("Ban: Users cant't ban themselves")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Check whether ban allready exists and if so return
+	if banExists, err := rt.db.BanExists(uid, bid); err != nil {
+		rt.baseLogger.Error("Ban: Error while checking for ban in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if banExists {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -93,11 +142,27 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("Unban: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Unban: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	bid := ps.ByName("bid")
 	if !schemes.ValidUserId(bid) {
 		rt.baseLogger.Error("BannedId (bid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("Unban: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("Unban: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

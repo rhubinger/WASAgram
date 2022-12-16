@@ -11,9 +11,17 @@ import (
 func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !schemes.ValidUserId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("GetLikes: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("GetLikes: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -31,6 +39,7 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 
 	// Send the response
 	var response = schemes.UserList{Length: len(likes), Users: likes}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -38,9 +47,17 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !schemes.ValidUserId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("GetLikeCount: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("GetLikeCount: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -54,6 +71,7 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Send the response
 	var response = GetCountResult{Count: count}
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
 }
@@ -61,15 +79,41 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
-	if !schemes.ValidUserId(pid) {
+	if !schemes.ValidId(pid) {
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("LikePost: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("LikePost: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	uid := ps.ByName("uid")
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("LikePost: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("LikePost: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Check whether ban allready exists and if so return
+	if likeExists, err := rt.db.LikeExists(pid, uid); err != nil {
+		rt.baseLogger.Error("Like: Error while checking for like in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if likeExists {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -99,11 +143,27 @@ func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("UnlikePost: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if postExists {
+		rt.baseLogger.Error("UnlikePost: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 	uid := ps.ByName("uid")
 	if !schemes.ValidUserId(uid) {
 		rt.baseLogger.Error("UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("UnlikePost: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if userExists {
+		rt.baseLogger.Error("UnlikePost: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

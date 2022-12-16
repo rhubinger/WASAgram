@@ -19,6 +19,15 @@ func (db *appdbimpl) DeleteComments(pid string) error {
 	return err
 }
 
+func (db *appdbimpl) GetComment(cid string) (schemes.Comment, error) {
+	var c schemes.Comment
+	err := db.c.QueryRow(`SELECT c.commentId, c.postId, u.name, c.userId, c.uploadTime, c.commentText
+							 FROM comments c, users u
+							 WHERE c.userId = u.userId AND c.commentId = ?`, cid).Scan(
+		&c.CommentId, &c.PostId, &c.UserId, &c.Username, &c.DateTime, &c.Comment)
+	return c, err
+}
+
 func (db *appdbimpl) GetComments(pid string) ([]schemes.Comment, error) {
 	rows, err := db.c.Query(`SELECT c.commentId, c.postId, u.name, c.userId, c.uploadTime, c.commentText
 							 FROM comments c, users u

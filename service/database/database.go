@@ -65,6 +65,7 @@ type AppDatabase interface {
 	DeleteComment(cid string) error
 	DeleteComments(pid string) error
 
+	GetComment(cid string) (schemes.Comment, error)
 	GetComments(pid string) ([]schemes.Comment, error)
 	GetCommentCount(pid string) (int, error)
 	IncrementCommentCount(pid string) error
@@ -105,6 +106,14 @@ type AppDatabase interface {
 	InsertPicture(picture []byte) (string, error)
 	GetPicture(pid string) ([]byte, error)
 	DeletePicture(pid string) error
+
+	// Check whether objects exist in db
+	UserExists(uid string) (bool, error)
+	PostExists(pid string) (bool, error)
+	CommentExists(cid string) (bool, error)
+	FollowExists(uid string, fid string) (bool, error)
+	BanExists(uid string, bid string) (bool, error)
+	LikeExists(pid string, uid string) (bool, error)
 
 	// Generates unique Ids for posts, comments and pictures
 	GenerateId(idType string) string

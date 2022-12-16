@@ -350,6 +350,7 @@ paths:
         Follow another user.
         The userId (uid) specifies the followed user,
         the followerId (fid) specifies the userId of the user which wants to follow the other user.
+        A user can't follow himself.
       security:
         - bearerAuth: []      
       requestBody:
@@ -449,6 +450,7 @@ paths:
         Ban another user.
         The userId (uid) specifies the the banning user, 
         the bannedId (bid) specifies the userId of the user which gets banned.
+        A user can't ban himself.
       security:
         - bearerAuth: []
       requestBody:
