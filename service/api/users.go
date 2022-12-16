@@ -160,7 +160,7 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 	posts, err := rt.db.GetPosts(uid, dateTime)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetPosts: error while getting users posts")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Shorten if too many posts
@@ -238,7 +238,7 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 	stream, err := rt.db.GetStream(uid, dateTime)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetStream: error while getting posts from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Shorten if too many posts

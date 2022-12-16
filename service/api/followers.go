@@ -30,7 +30,7 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 	followed, err := rt.db.GetFollowed(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetFollowed: error while getting followed users from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Shorten if too many followed
@@ -66,7 +66,7 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 	count, err := rt.db.GetFollowedCount(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetFollowedCount: error while getting followed count from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 	followers, err := rt.db.GetFollowers(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetFollowers: error while getting followers from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Shorten if too many followers
@@ -134,7 +134,7 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 	count, err := rt.db.GetFollowerCount(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetFollowerCount: error while getting follower count from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -197,21 +197,21 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 	err := rt.db.Follow(uid, fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Follow: failed to insert follow into db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Update following users followed count in db
 	err = rt.db.IncrementFollowedCount(fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Follow: failed to update following users followed count in db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Update followed users followers count in db
 	err = rt.db.IncrementFollowerCount(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Follow: failed to update followed users follower count in db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -254,21 +254,21 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 	err := rt.db.Unfollow(uid, fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("UnFollow: failed to delete follow from db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Update unfollowing users followed count in db
 	err = rt.db.DecrementFollowedCount(fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Unfollow: failed to update unfollowing users followed count in db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	// Update unfollowed users followers count in db
 	err = rt.db.DecrementFollowerCount(uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Unfollow: failed to update unfollowed users follower count in db")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
