@@ -71,8 +71,6 @@ paths:
         The searchstring parameter is the string that should match the searched users userId or name.
         The searching users user Id (uid) must be passed as parameter uid.
         Returns a list of user objects which fit the search parameters ordered by relevance to the searching user.
-      security:
-        - bearerAuth: []
       responses:
         "200":
           description: |
