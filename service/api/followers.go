@@ -20,9 +20,27 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 		rt.baseLogger.Error("GetFollowed: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetFollowed: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowed: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowed: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetFollowed: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -56,9 +74,27 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 		rt.baseLogger.Error("GetFollowedCount: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetFollowedCount: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowedCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowedCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetFollowedCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -88,9 +124,27 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 		rt.baseLogger.Error("GetFollowers: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetFollowers: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowers: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowers: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetFollowers: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -124,9 +178,27 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 		rt.baseLogger.Error("GetFollowerCount: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetFollowerCount: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowerCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetFollowerCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetFollowerCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -156,7 +228,7 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 		rt.baseLogger.Error("Follow: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Follow: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -170,7 +242,7 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 		rt.baseLogger.Error("Follow: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Follow: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -180,6 +252,24 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 	if uid == fid {
 		rt.baseLogger.Error("Follow: Users cant't follow themselves")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Authentification as user with userId fid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Follow: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, fid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Follow: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("Follow: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -194,7 +284,7 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 	}
 
 	// Insert into db
-	err := rt.db.Follow(uid, fid)
+	err = rt.db.Follow(uid, fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Follow: failed to insert follow into db")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -230,7 +320,7 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("Unfollow: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Unfollow: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -244,14 +334,32 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("Unfollow: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Unfollow: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Authentification as user with userId fid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Unfollow: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, fid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Unfollow: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("Unfollow: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Insert into db
-	err := rt.db.Unfollow(uid, fid)
+	err = rt.db.Unfollow(uid, fid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("UnFollow: failed to delete follow from db")
 		w.WriteHeader(http.StatusInternalServerError)

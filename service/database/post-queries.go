@@ -30,6 +30,15 @@ func (db *appdbimpl) GetPost(pid string) (schemes.Post, error) {
 	return p, err
 }
 
+func (db *appdbimpl) GetPostByPictureId(pictureId string) (schemes.Post, error) {
+	var p schemes.Post
+	err := db.c.QueryRow(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
+						  FROM posts p, users u
+						  WHERE p.userId = u.userId AND p.pictureId = ?`,
+		pictureId).Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
+	return p, err
+}
+
 func (db *appdbimpl) GetPosts(uid string, dateTime string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
 							 FROM posts p, users u

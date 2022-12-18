@@ -19,9 +19,33 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("GetLikes: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("GetLikes: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikes: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikes: Failed to get post from db")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikes: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetLikes: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -55,9 +79,33 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 		rt.baseLogger.Error("GetLikeCount: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("GetLikeCount: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikeCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikeCount: Failed to get post from db")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetLikeCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetLikeCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -87,7 +135,7 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("LikePost: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("LikePost: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -101,9 +149,27 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("LikePost: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("LikePost: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("LikePost: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("LikePost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("LikePost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -118,7 +184,7 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 	}
 
 	// Create new like in db
-	err := rt.db.Like(pid, uid)
+	err = rt.db.Like(pid, uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("LikePost: failed to insert like into db")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -147,7 +213,7 @@ func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("UnlikePost: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("UnlikePost: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -161,14 +227,32 @@ func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("UnlikePost: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("UnlikePost: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("UnlikePost: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("UnlikePost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("UnlikePost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Delete like from db
-	err := rt.db.Unlike(pid, uid)
+	err = rt.db.Unlike(pid, uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("UnikePost: failed to delete like from db")
 		w.WriteHeader(http.StatusInternalServerError)

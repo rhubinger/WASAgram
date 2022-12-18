@@ -20,9 +20,27 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		rt.baseLogger.Error("GetBanned: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetBanned: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBanned: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBanned: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetBanned: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -56,11 +74,30 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 		rt.baseLogger.Error("GetBannedCount: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetBannedCount: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBannedCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetBannedCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetBannedCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Get count of banned account
 	count, err := rt.db.GetBannedCount(uid)
 	if err != nil {
@@ -87,7 +124,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		rt.baseLogger.Error("Ban: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Ban: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -101,7 +138,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		rt.baseLogger.Error("Ban: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Ban: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -110,6 +147,24 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	if uid == bid {
 		rt.baseLogger.Error("Ban: Users cant't ban themselves")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Ban: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Ban: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("Ban: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -124,7 +179,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 
 	// Insert ban in db
-	err := rt.db.Ban(uid, bid)
+	err = rt.db.Ban(uid, bid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Ban: failed to insert ban into db")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -146,7 +201,7 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		rt.baseLogger.Error("Unban: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Unban: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -160,14 +215,32 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		rt.baseLogger.Error("Unban: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("Unban: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Unban: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Unban: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("Unban: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Delete ban from db
-	err := rt.db.Unban(uid, bid)
+	err = rt.db.Unban(uid, bid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("Ban: failed to delete ban from db")
 		w.WriteHeader(http.StatusInternalServerError)

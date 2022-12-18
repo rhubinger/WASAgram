@@ -17,6 +17,12 @@ func (db *appdbimpl) GetIdentifier(uid string) (string, error) {
 	return identifier, err
 }
 
+func (db *appdbimpl) GetUserId(identifier string) (string, error) {
+	var userId string
+	err := db.c.QueryRow("SELECT userId FROM users WHERE identifier = ?;", identifier).Scan(&userId)
+	return identifier, err
+}
+
 func (db *appdbimpl) UpdateUsername(name string, uid string) error {
 	_, err := db.c.Exec("UPDATE users SET name = ? WHERE userId = ?;", name, uid)
 	return err

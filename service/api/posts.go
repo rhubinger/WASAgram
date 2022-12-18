@@ -27,6 +27,25 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	// Authentification as user with userId metadata.uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Create Post: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, metadata.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreatePost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("CreatePost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Parse the file
 	file, _, err := r.FormFile("image")
 	if err != nil {
@@ -55,7 +74,7 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("CreatePost: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("CreatePost: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -91,7 +110,7 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 		rt.baseLogger.Error("GetPost: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("GetPost: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -102,6 +121,24 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetPost: Failed to get post from db")
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPost: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetPost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -122,7 +159,7 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("DeletePost: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("DeletePost: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -135,6 +172,25 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	// Authentification as user with userId post.userId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeletePost: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeltePost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("DeletePost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Delete post from db
 	err = rt.db.DeletePost(pid)
 	if err != nil {

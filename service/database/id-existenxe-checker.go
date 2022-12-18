@@ -42,6 +42,19 @@ func (db *appdbimpl) CommentExists(cid string) (bool, error) {
 	return true, nil
 }
 
+func (db *appdbimpl) PictureExists(pid string) (bool, error) {
+	var pictureId string
+	err := db.c.QueryRow(`SELECT pictureId
+						FROM pictures 
+						WHERE pictureId = ?;`, pid).Scan(&pictureId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	} else if err != nil {
+		return true, err
+	}
+	return true, nil
+}
+
 func (db *appdbimpl) FollowExists(uid string, fid string) (bool, error) {
 	var userId string
 	var followerId string

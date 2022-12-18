@@ -1,8 +1,11 @@
 package api
 
 import (
+	"errors"
+	"net/http"
 	"os"
 	"regexp"
+	"strings"
 )
 
 // Get number result
@@ -50,4 +53,16 @@ type CreatePostResponse struct {
 // Create comment response
 type CreateCommentResponse struct {
 	CommentId string `json:"commentId"`
+}
+
+// Parse Authorization Header from Requests
+func ParseIdentifier(r *http.Request) (string, error) {
+	prefix := "Bearer "
+	authHeader := r.Header.Get("Authorization")
+	reqToken := strings.TrimPrefix(authHeader, prefix)
+
+	if authHeader == "" || reqToken == authHeader {
+		return "", errors.New("Failed to parse authorization header")
+	}
+	return authHeader, nil
 }

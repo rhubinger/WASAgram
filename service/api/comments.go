@@ -19,7 +19,7 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 		rt.baseLogger.Error("CreateComment: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("CreateComment: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -39,13 +39,31 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 		return
 	}
 
+	// Authentification as user with userId comment.userId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreateComment: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, comment.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("CreateComment: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("CreateComment: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Insert into db
 	comment.PostId = pid
 	if userExists, err := rt.db.UserExists(comment.UserId); err != nil {
 		rt.baseLogger.Error("CreateComment: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("CreateComment: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -79,12 +97,36 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if postExists, err := rt.db.PostExists(pid); err != nil {
-		rt.baseLogger.Error("GetComment: Error while checking for post in db")
+		rt.baseLogger.Error("GetComments: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
-		rt.baseLogger.Error("GetComment: Post doesn't exist in db")
+	} else if !postExists {
+		rt.baseLogger.Error("GetComments: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetComments: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetComments: Failed to get post from db")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetComments: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetComments: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -118,9 +160,33 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 		rt.baseLogger.Error("GetCommentCount: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("GetCommentCount: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetCommentCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetCommentCount: Failed to get post from db")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetCommentCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetCommentCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -150,7 +216,7 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 		rt.baseLogger.Error("DeleteComment: Error while checking for post in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if postExists {
+	} else if !postExists {
 		rt.baseLogger.Error("DeleteComment: Post doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -164,14 +230,38 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 		rt.baseLogger.Error("DeleteComment: Error while checking for comment in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if commentExists {
+	} else if !commentExists {
 		rt.baseLogger.Error("DeleteComment: Comment doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
+	// Authentification as user with userId comment.userId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeleteComment: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	comment, err := rt.db.GetComment(cid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeleteComment: Failed to get comment from db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, comment.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeleteComment: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("DeleteComment: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// Delete comment from db
-	err := rt.db.DeleteComment(cid)
+	err = rt.db.DeleteComment(cid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("DeleteComment: failed to delete comment from db")
 		w.WriteHeader(http.StatusInternalServerError)

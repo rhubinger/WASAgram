@@ -78,7 +78,7 @@ func (rt *_router) SearchUser(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("SearchUser: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("SearchUser: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -108,9 +108,27 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		rt.baseLogger.Error("GetUser: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetUser: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetUser: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetUser: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetUser: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -139,7 +157,7 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 		rt.baseLogger.Error("GetPosts: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetPosts: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -185,9 +203,27 @@ func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httpr
 		rt.baseLogger.Error("GetPostCount: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetPostCount: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPostCount: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPostCount: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetPostCount: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -217,7 +253,7 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 		rt.baseLogger.Error("GetStream: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("GetStream: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -231,6 +267,24 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 	} else if !schemes.ValidDatetime(dateTime) {
 		rt.baseLogger.Error("GetPosts: dateTime is formated incorrectly")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetStream: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetStream: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("GetStream: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -263,7 +317,7 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 		rt.baseLogger.Error("ChangeUsername: Error while checking for user in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userExists {
+	} else if !userExists {
 		rt.baseLogger.Error("ChangeUsername: User doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -280,6 +334,24 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	} else if !request.Valid() {
 		rt.baseLogger.Error("ChangeUsername: Request Body invalid")
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Authentification as user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("ChangeUsername: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("ChangeUsername: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.WithError(err).Error("ChangeUsername: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 

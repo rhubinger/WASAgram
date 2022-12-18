@@ -54,6 +54,7 @@ type AppDatabase interface {
 
 	GetPictureId(pid string) (string, error)
 	GetPost(pid string) (schemes.Post, error)
+	GetPostByPictureId(pictureId string) (schemes.Post, error)
 	GetStream(uid string, dateTime string) ([]schemes.Post, error)
 	GetPosts(uid string, dateTime string) ([]schemes.Post, error)
 	GetPostCount(uid string) (int, error)
@@ -111,12 +112,17 @@ type AppDatabase interface {
 	UserExists(uid string) (bool, error)
 	PostExists(pid string) (bool, error)
 	CommentExists(cid string) (bool, error)
+	PictureExists(pid string) (bool, error)
 	FollowExists(uid string, fid string) (bool, error)
 	BanExists(uid string, bid string) (bool, error)
 	LikeExists(pid string, uid string) (bool, error)
 
 	// Generates unique Ids for posts, comments and pictures
 	GenerateId(idType string) string
+
+	// Authorization
+	AuthorizeAsUser(identifier string, userId string) (bool, error)
+	AuthorizeAsNotBanned(identifier string, userId string) (bool, error)
 
 	// Ping
 	Ping() error
@@ -141,7 +147,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		sqlStmt := `CREATE TABLE users (
 						userId VARCHAR(16) NOT NULL PRIMARY KEY,
 						name VARCHAR(30) NOT NULL, 
-						identifier CHAR(11) NOT NULL,
+						identifier CHAR(11) NOT NULL UNIQUE,
 						posts INTEGER NOT NULL,
 						followers INTEGER NOT NULL,
 						followed INTEGER NOT NULL
