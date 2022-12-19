@@ -39,3 +39,15 @@ func (db *appdbimpl) GenerateId(idType string) string {
 
 	return id
 }
+
+func (db *appdbimpl) GenerateIdentifier() string {
+	id := GenerateRandomString(11)
+	var result string
+	err := db.c.QueryRow("SELECT identifier FROM users WHERE identifier == ?", id).Scan(&result)
+	for err == nil {
+		id = GenerateRandomString(11)
+		err = db.c.QueryRow("SELECT identifier FROM users WHERE identifier == ?", id).Scan(&result)
+	}
+
+	return id
+}

@@ -5,7 +5,7 @@ import (
 )
 
 func (db *appdbimpl) InsertUser(user schemes.User) (string, error) {
-	identifier := db.GenerateId("")
+	identifier := db.GenerateIdentifier()
 	_, err := db.c.Exec("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?);",
 		user.UserId, user.Name, identifier, user.Posts, user.Followers, user.Followed)
 	return identifier, err

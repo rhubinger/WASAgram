@@ -119,6 +119,7 @@ type AppDatabase interface {
 
 	// Generates unique Ids for posts, comments and pictures
 	GenerateId(idType string) string
+	GenerateIdentifier() string //Generates identifier for user authentication
 
 	// Authorization
 	AuthorizeAsUser(identifier string, userId string) (bool, error)
