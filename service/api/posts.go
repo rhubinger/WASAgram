@@ -41,7 +41,7 @@ func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("CreatePost: User unauthorized to access resource")
+		rt.baseLogger.Error("CreatePost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -137,7 +137,7 @@ func (rt *_router) GetPost(w http.ResponseWriter, r *http.Request, ps httprouter
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetPost: User unauthorized to access resource")
+		rt.baseLogger.Error("GetPost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -186,7 +186,7 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("DeletePost: User unauthorized to access resource")
+		rt.baseLogger.Error("DeletePost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

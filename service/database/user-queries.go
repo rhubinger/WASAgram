@@ -20,7 +20,7 @@ func (db *appdbimpl) GetIdentifier(uid string) (string, error) {
 func (db *appdbimpl) GetUserId(identifier string) (string, error) {
 	var userId string
 	err := db.c.QueryRow("SELECT userId FROM users WHERE identifier = ?;", identifier).Scan(&userId)
-	return identifier, err
+	return userId, err
 }
 
 func (db *appdbimpl) UpdateUsername(name string, uid string) error {

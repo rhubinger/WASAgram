@@ -45,7 +45,7 @@ func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetPicture: User unauthorized to access resource")
+		rt.baseLogger.Error("GetPicture: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

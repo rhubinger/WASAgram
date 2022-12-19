@@ -73,7 +73,7 @@ func (db *appdbimpl) BanExists(uid string, bid string) (bool, error) {
 	var userId string
 	var bannedId string
 	err := db.c.QueryRow(`SELECT userId, bannedId
-						FROM banned
+						FROM bans
 						WHERE userId = ? AND bannedId = ?;`, uid, bid).Scan(&userId, &bannedId)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil

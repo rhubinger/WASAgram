@@ -127,7 +127,7 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetUser: User unauthorized to access resource")
+		rt.baseLogger.Error("GetUser: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -222,7 +222,7 @@ func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httpr
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetPostCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetPostCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -283,7 +283,7 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetStream: User unauthorized to access resource")
+		rt.baseLogger.Error("GetStream: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -350,7 +350,7 @@ func (rt *_router) ChangeUsername(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("ChangeUsername: User unauthorized to access resource")
+		rt.baseLogger.Error("ChangeUsername: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

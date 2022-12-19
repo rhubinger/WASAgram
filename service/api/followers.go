@@ -39,7 +39,7 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetFollowed: User unauthorized to access resource")
+		rt.baseLogger.Error("GetFollowed: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -93,7 +93,7 @@ func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps h
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetFollowedCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetFollowedCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -143,7 +143,7 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetFollowers: User unauthorized to access resource")
+		rt.baseLogger.Error("GetFollowers: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -197,7 +197,7 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetFollowerCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetFollowerCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -268,7 +268,7 @@ func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("Follow: User unauthorized to access resource")
+		rt.baseLogger.Error("Follow: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -353,7 +353,7 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("Unfollow: User unauthorized to access resource")
+		rt.baseLogger.Error("Unfollow: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

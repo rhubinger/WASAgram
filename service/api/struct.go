@@ -64,5 +64,5 @@ func ParseIdentifier(r *http.Request) (string, error) {
 	if authHeader == "" || reqToken == authHeader {
 		return "", errors.New("Failed to parse authorization header")
 	}
-	return authHeader, nil
+	return reqToken, nil
 }

@@ -44,7 +44,7 @@ func (rt *_router) GetLikes(w http.ResponseWriter, r *http.Request, ps httproute
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetLikes: User unauthorized to access resource")
+		rt.baseLogger.Error("GetLikes: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -104,7 +104,7 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetLikeCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetLikeCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -168,7 +168,7 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("LikePost: User unauthorized to access resource")
+		rt.baseLogger.Error("LikePost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -246,7 +246,7 @@ func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("UnlikePost: User unauthorized to access resource")
+		rt.baseLogger.Error("UnlikePost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

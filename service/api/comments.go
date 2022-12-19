@@ -52,7 +52,7 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("CreateComment: User unauthorized to access resource")
+		rt.baseLogger.Error("CreateComment: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -125,7 +125,7 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetComments: User unauthorized to access resource")
+		rt.baseLogger.Error("GetComments: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -185,7 +185,7 @@ func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps ht
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetCommentCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetCommentCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -255,7 +255,7 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("DeleteComment: User unauthorized to access resource")
+		rt.baseLogger.Error("DeleteComment: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

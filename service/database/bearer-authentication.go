@@ -1,8 +1,15 @@
 package database
 
+import (
+	"database/sql"
+	"errors"
+)
+
 func (db *appdbimpl) AuthorizeAsUser(identifier string, userId string) (bool, error) {
 	rightIdentifier, err := db.GetIdentifier(userId)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 	return identifier == rightIdentifier, nil
@@ -10,7 +17,9 @@ func (db *appdbimpl) AuthorizeAsUser(identifier string, userId string) (bool, er
 
 func (db *appdbimpl) AuthorizeAsNotBanned(identifier string, userId string) (bool, error) {
 	bannedId, err := db.GetUserId(identifier)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 

@@ -39,7 +39,7 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetBanned: User unauthorized to access resource")
+		rt.baseLogger.Error("GetBanned: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -93,7 +93,7 @@ func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps htt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("GetBannedCount: User unauthorized to access resource")
+		rt.baseLogger.Error("GetBannedCount: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -163,14 +163,14 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("Ban: User unauthorized to access resource")
+		rt.baseLogger.Error("Ban: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	// Check whether ban allready exists and if so return
 	if banExists, err := rt.db.BanExists(uid, bid); err != nil {
-		rt.baseLogger.Error("Ban: Error while checking for ban in db")
+		rt.baseLogger.WithError(err).Error("Ban: Error while checking for ban in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if banExists {
@@ -234,7 +234,7 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if !authorized {
-		rt.baseLogger.WithError(err).Error("Unban: User unauthorized to access resource")
+		rt.baseLogger.Error("Unban: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
