@@ -80,7 +80,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/userlist"
         "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
         
@@ -812,6 +811,7 @@ components:
         example: "@Alan_Turing"
         minLength: 3
         maxLength: 16
+        description: userId
       name: uid
       in: path
       required: true
@@ -824,6 +824,7 @@ components:
         readOnly: true
         minLength: 3
         maxLength: 16
+        description: userId of follower
       name: fid
       in: path
       required: true
@@ -836,6 +837,7 @@ components:
         readOnly: true
         minLength: 3
         maxLength: 16
+        description: userId of banned user
       name: bid
       in: path
       required: true
@@ -848,6 +850,7 @@ components:
         readOnly: true
         minLength: 11
         maxLength: 11
+        description: postId
       name: pid
       in: path
       required: true
@@ -860,6 +863,7 @@ components:
         readOnly: true
         minLength: 11
         maxLength: 11
+        description: commentId
       name: cid
       in: path
       required: true
@@ -872,6 +876,7 @@ components:
         readOnly: true
         minLength: 11
         maxLength: 11
+        description: pictureId
       name: pid
       in: path
       required: true
@@ -884,6 +889,7 @@ components:
         readOnly: true
         minLength: 1
         maxLength: 30
+        description: search info
       name: searchString
       in: query
       required: true
@@ -895,6 +901,7 @@ components:
         example: "@Alan_Turing"
         minLength: 3
         maxLength: 16
+        description: userId
       name: uid
       in: query
       required: true
@@ -907,6 +914,7 @@ components:
         readOnly: true
         minLength: 19
         maxLength: 19
+        description: dateTime (yyyy-mm-dd hh:mm:ss)
       name: dateTime
       in: query
       required: false
