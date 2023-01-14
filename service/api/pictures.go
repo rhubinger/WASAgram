@@ -16,7 +16,7 @@ func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprou
 		rt.baseLogger.Error("PictureId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
-	} else if pictureExists, err := rt.db.UserExists(pid); err != nil {
+	} else if pictureExists, err := rt.db.PictureExists(pid); err != nil {
 		rt.baseLogger.Error("GetPicture: Error while checking for picture in db")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -70,6 +70,4 @@ func (rt *_router) GetPicture(w http.ResponseWriter, r *http.Request, ps httprou
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

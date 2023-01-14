@@ -33,7 +33,7 @@ func (rt *_router) CreateComment(w http.ResponseWriter, r *http.Request, ps http
 		rt.baseLogger.WithError(err).Error("CreateComment: Failed to parse request body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
-	} else if !comment.Valid() {
+	} else if schemes.ValidId(comment.PostId) && schemes.ValidUserId(comment.UserId) && len(comment.Comment) >= 1 && len(comment.Comment) <= 140 {
 		rt.baseLogger.Error("CreateComment: Request Body invalid")
 		w.WriteHeader(http.StatusNotFound)
 		return

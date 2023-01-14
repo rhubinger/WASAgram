@@ -917,7 +917,7 @@ components:
         description: dateTime (yyyy-mm-dd hh:mm:ss)
       name: dateTime
       in: query
-      required: false
+      required: true
       description: DateTime are a date and a time which describe a point in time.
   
   schemas:

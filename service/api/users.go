@@ -150,7 +150,7 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 	// Parse parameters
 	uid := ps.ByName("uid")
 	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
+		rt.baseLogger.Error("GetPosts: UserId (uid) invalid" + uid)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if userExists, err := rt.db.UserExists(uid); err != nil {
@@ -163,9 +163,27 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPosts: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("GetPosts: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.Error("GetPosts: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	dateTime := r.URL.Query().Get("dateTime")
 	if dateTime == "" {
-		rt.baseLogger.Error("SearchUser: Failed to parse dateTime")
+		rt.baseLogger.Error("GetPosts: Failed to parse dateTime")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if !schemes.ValidDatetime(dateTime) {

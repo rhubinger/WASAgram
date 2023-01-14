@@ -334,7 +334,6 @@ func (ch *cors) isOriginAllowed(origin string) bool {
 	if len(ch.allowedOrigins) == 0 {
 		return true
 	}
-
 	for _, allowedOrigin := range ch.allowedOrigins {
 		if allowedOrigin == origin || allowedOrigin == corsOriginMatchAll {
 			return true
