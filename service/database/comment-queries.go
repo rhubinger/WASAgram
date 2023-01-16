@@ -40,6 +40,9 @@ func (db *appdbimpl) GetComments(pid string) ([]schemes.Comment, error) {
 
 	comments := []schemes.Comment{}
 	for rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
 		c := schemes.Comment{}
 		err = rows.Scan(&c.CommentId, &c.PostId, &c.UserId, &c.Username, &c.DateTime, &c.Comment)
 		if err != nil {

@@ -48,6 +48,9 @@ func (db *appdbimpl) SearchUser(searchString string, uid string) ([]schemes.User
 
 	result := []schemes.User{}
 	for rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
 		u := schemes.User{}
 		err = rows.Scan(&u.UserId, &u.Name, &u.Posts, &u.Followers, &u.Followed)
 		if err != nil {

@@ -51,6 +51,9 @@ func (db *appdbimpl) GetPosts(uid string, dateTime string) ([]schemes.Post, erro
 
 	posts := []schemes.Post{}
 	for rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
 		p := schemes.Post{}
 		err = rows.Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
 		if err != nil {
@@ -74,6 +77,9 @@ func (db *appdbimpl) GetStream(uid string, dateTime string) ([]schemes.Post, err
 
 	posts := []schemes.Post{}
 	for rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
 		p := schemes.Post{}
 		err = rows.Scan(&p.PostId, &p.UserId, &p.Username, &p.DateTime, &p.Caption, &p.PictureId, &p.Likes, &p.Comments)
 		if err != nil {
