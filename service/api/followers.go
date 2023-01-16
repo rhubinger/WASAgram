@@ -217,6 +217,70 @@ func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps h
 	_ = json.NewEncoder(w).Encode(response)
 }
 
+func (rt *_router) isFollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Parse Parameters
+	uid := ps.ByName("uid")
+	if !schemes.ValidUserId(uid) {
+		rt.baseLogger.Error("UserId (uid) invalid")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("isFollowing: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !userExists {
+		rt.baseLogger.Error("isFollowing: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	fid := ps.ByName("fid")
+	if !schemes.ValidUserId(fid) {
+		rt.baseLogger.Error("FollowerId (fid) invalid")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(fid); err != nil {
+		rt.baseLogger.Error("isFollowing: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !userExists {
+		rt.baseLogger.Error("isFollowing: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId uid
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("isFollowing: Failed to parse identifier from request")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("isFollowing: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.Error("isFollowing: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Check whether follow exists in db
+	followExists, err := rt.db.FollowExists(uid, fid)
+	if err != nil {
+		rt.baseLogger.Error("isFollowing: Error while checking for follow in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} 
+
+	// Send the response
+	var response = struct {isFollowing bool}{followExists}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "application/json")
+	_ = json.NewEncoder(w).Encode(response)
+}
+
 func (rt *_router) Follow(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")

@@ -335,6 +335,37 @@ paths:
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
   
+  /users/{uid}/isFollowedBy/{fid}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+      - $ref: "#/components/parameters/followerId"
+    get:
+      tags: ["Followers"]
+      operationId: isFollowing
+      summary: Check whether a user is followed by another
+      description: |
+        Check whether the user with userId uid is followed by the user with userId fid.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Boolean which contains the answer
+          content:
+            application/json:
+              schema:
+                description: Does user1 (fid) follow user2 (uid)
+                type: object
+                properties:
+                  isFollowing:
+                    description: "Is the user followed by the other user"
+                    type: boolean
+                    example: true
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+        "404": { description: User not found }
+        "500": { $ref: "#/components/responses/InternalServerError" }
+        
   /users/{uid}/followers/{fid}:
     parameters:
       - $ref: "#/components/parameters/userId"
@@ -434,6 +465,37 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
+
+  /users/{uid}/hasBanned/{bid}:
+    parameters:
+    - $ref: "#/components/parameters/userId"
+    - $ref: "#/components/parameters/bannedId"
+    get:
+        tags: ["Banning"]
+        operationId: isBanned
+        summary: Check whether a user is banned by another
+        description: |
+          Check whether the user with userId bid is banned by the user with userId uid.
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: |
+              Boolean which contains the answer
+            content:
+              application/json:
+                schema:
+                  description: Does user1 (uid) ban user2 (bid)
+                  type: object
+                  properties:
+                    isBanned:
+                      description: "Is the user banned by the other user"
+                      type: boolean
+                      example: true
+          "400": { $ref: "#/components/responses/BadRequest" }
+          "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+          "404": { description: User not found }
+          "500": { $ref: "#/components/responses/InternalServerError" }
 
   /users/{uid}/banned/{bid}:
     parameters:
@@ -622,6 +684,36 @@ paths:
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
+  /posts/{pid}/isLikedBy/{uid}:
+    parameters:
+      - $ref: "#/components/parameters/postId"
+      - $ref: "#/components/parameters/userId"
+    get:
+        tags: ["Likes"]
+        operationId: hasLiked
+        summary: Check whether a user liked a post
+        description: |
+          Check whether the user with userId uid liked the post with postId pid
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: |
+              Boolean which contains the answer
+            content:
+              application/json:
+                schema:
+                  description: Did the user like the post
+                  type: object
+                  properties:
+                    hasLiked:
+                      description: "Does the user like the post"
+                      type: boolean
+                      example: true
+          "400": { $ref: "#/components/responses/BadRequest" }
+          "401": { $ref: "#/components/responses/UnauthorizedRequest" }
+          "404": { description: User not found }
+          "500": { $ref: "#/components/responses/InternalServerError" }
   /posts/{pid}/likes/{uid}:
     parameters:
       - $ref: "#/components/parameters/postId"

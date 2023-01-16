@@ -124,6 +124,76 @@ func (rt *_router) GetLikeCount(w http.ResponseWriter, r *http.Request, ps httpr
 	_ = json.NewEncoder(w).Encode(response)
 }
 
+func (rt *_router) hasLikedPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Get post from db
+	pid := ps.ByName("pid")
+	if !schemes.ValidId(pid) {
+		rt.baseLogger.Error("PostId (pid) invalid")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if postExists, err := rt.db.PostExists(pid); err != nil {
+		rt.baseLogger.Error("hasLikedPost: Error while checking for post in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !postExists {
+		rt.baseLogger.Error("hasLikedPost: Post doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	uid := ps.ByName("uid")
+	if !schemes.ValidUserId(uid) {
+		rt.baseLogger.Error("UserId (uid) invalid")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	} else if userExists, err := rt.db.UserExists(uid); err != nil {
+		rt.baseLogger.Error("hasLikedPost: Error while checking for user in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !userExists {
+		rt.baseLogger.Error("hasLikedPost: User doesn't exist in db")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// Authentification as not banned by the user with userId post.UserId
+	identifier, err := ParseIdentifier(r)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("hasLikedPost: Failed to parse identifier from reques")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	post, err := rt.db.GetPost(pid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("hasLikedPost: Failed to get post from db")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("hasLikedPost: Error occured during authorization")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !authorized {
+		rt.baseLogger.Error("hasLikedPost: User unauthorized to access resource")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Check whether like exists in db
+	likeExists, err := rt.db.LikeExists(pid, uid)
+	if err != nil {
+		rt.baseLogger.Error("hasLikedPost: Error while checking for like in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Send the response
+	var response = struct {hasLiked bool}{likeExists}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "application/json")
+	_ = json.NewEncoder(w).Encode(response)
+}
+
 func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")
@@ -173,7 +243,7 @@ func (rt *_router) LikePost(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	// Check whether ban allready exists and if so return
+	// Check whether like allready exists and if so return
 	if likeExists, err := rt.db.LikeExists(pid, uid); err != nil {
 		rt.baseLogger.Error("Like: Error while checking for like in db")
 		w.WriteHeader(http.StatusInternalServerError)
