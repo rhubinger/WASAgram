@@ -36,7 +36,7 @@ export default {
 		</div>
 		<div>
 			<div class="container" v-for="user in followed">
-				<User class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
+				<User v-bind:id="user.userId" class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
 			</div>
 		</div>
 	</div>

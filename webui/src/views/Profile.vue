@@ -99,7 +99,7 @@ export default {
 		</div>
 		<div class="grid-container">
 			<div class="grid-item" v-for="post in posts">
-				<Post :pid="post.postId" :allowDelete="true" />
+				<Post v-bind:id="post.postId" :pid="post.postId" :allowDelete="true" />
 			</div>
 		</div>
 	</div>

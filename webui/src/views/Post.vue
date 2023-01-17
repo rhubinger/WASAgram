@@ -62,7 +62,7 @@ export default {
 		</div>
 		<div>
 			<div class="container" v-for="comment in this.comments">
-				<Comment class="item" :cid="comment.commentId" :pid="comment.postId" :uid="comment.userId" :username="comment.username" 
+				<Comment v-bind:id="comment.cid" class="item" :cid="comment.commentId" :pid="comment.postId" :uid="comment.userId" :username="comment.username" 
 				:datetime="comment['date-time']" :comment="comment.comment"/>
 			</div>
 		</div>

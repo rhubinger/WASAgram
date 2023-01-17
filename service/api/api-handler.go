@@ -21,14 +21,16 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/users/:uid/followed/count", rt.GetFollowedCount)
 	rt.router.GET("/users/:uid/followers", rt.GetFollowers)
 	rt.router.GET("/users/:uid/followers/count", rt.GetFollowerCount)
-	rt.router.GET("/users/:uid/isFollowedBy/:fid", rt.isFollowing) //path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	// path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	rt.router.GET("/users/:uid/isFollowedBy/:fid", rt.isFollowing)
 	rt.router.PUT("/users/:uid/followers/:fid", rt.Follow)
 	rt.router.DELETE("/users/:uid/followers/:fid", rt.Unfollow)
 
 	// Banning
 	rt.router.GET("/users/:uid/banned", rt.GetBanned)
 	rt.router.GET("/users/:uid/banned/count", rt.GetBannedCount)
-	rt.router.GET("/users/:uid/hasBanned/:bid", rt.isBanned) //path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	// path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	rt.router.GET("/users/:uid/hasBanned/:bid", rt.isBanned)
 	rt.router.PUT("/users/:uid/banned/:bid", rt.Ban)
 	rt.router.DELETE("/users/:uid/banned/:bid", rt.Unban)
 
@@ -40,7 +42,8 @@ func (rt *_router) Handler() http.Handler {
 	// Likes
 	rt.router.GET("/posts/:pid/likes", rt.GetLikes)
 	rt.router.GET("/posts/:pid/likes/count", rt.GetLikeCount)
-	rt.router.PUT("/posts/:pid/isLikedBy/:uid", rt.hasLikedPost) //path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	// path ugly due to httprouter issue (wildcard route [..] conflicts with ...)
+	rt.router.PUT("/posts/:pid/isLikedBy/:uid", rt.hasLikedPost)
 	rt.router.PUT("/posts/:pid/likes/:uid", rt.LikePost)
 	rt.router.DELETE("/posts/:pid/likes/:uid", rt.UnlikePost)
 

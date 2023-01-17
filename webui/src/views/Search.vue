@@ -40,7 +40,7 @@ export default {
 		</form>
 		<div>
 			<div class="container" v-for="user in searchResult">
-				<User class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
+				<User v-bind:id="user.userId" class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
 			</div>
 		</div>
 	</div>

@@ -216,7 +216,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
-	// Likkes table
+	// Likes table
 	err = db.QueryRow(`SELECT * FROM sqlite_master WHERE type='table' AND name='likes';`).Scan(&str)
 	if errors.Is(err, sql.ErrNoRows) {
 		sqlStmt := `CREATE TABLE likes (

@@ -12,7 +12,8 @@ import (
 
 func (rt *_router) CreatePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse request body
-	err := r.ParseMultipartForm(100000000) // Allows for an image size of ~100MB; should be good for 8k pictures
+	// Allows for an image size of ~100MB; should be good for 8k pictures
+	err := r.ParseMultipartForm(100000000)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("CreatePost: Error occured while parsing multipart form")
 		w.WriteHeader(http.StatusInternalServerError)
