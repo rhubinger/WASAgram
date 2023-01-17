@@ -128,7 +128,7 @@ func (rt *_router) hasLikedPost(w http.ResponseWriter, r *http.Request, ps httpr
 	// Get post from db
 	pid := ps.ByName("pid")
 	if !schemes.ValidId(pid) {
-		rt.baseLogger.Error("PostId (pid) invalid")
+		rt.baseLogger.Error("hasLikedPost: PostId (pid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if postExists, err := rt.db.PostExists(pid); err != nil {
@@ -142,7 +142,7 @@ func (rt *_router) hasLikedPost(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 	uid := ps.ByName("uid")
 	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
+		rt.baseLogger.Error("hasLikedPost: UserId (uid) invalid")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else if userExists, err := rt.db.UserExists(uid); err != nil {
@@ -188,7 +188,7 @@ func (rt *_router) hasLikedPost(w http.ResponseWriter, r *http.Request, ps httpr
 	}
 
 	// Send the response
-	var response = struct {hasLiked bool}{likeExists}
+	var response = GetExistResult{Exists: likeExists}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
@@ -318,6 +318,18 @@ func (rt *_router) UnlikePost(w http.ResponseWriter, r *http.Request, ps httprou
 	} else if !authorized {
 		rt.baseLogger.Error("UnlikePost: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Check whether Like exists in db
+	likeExists, err := rt.db.LikeExists(pid, uid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("UnlikePost: Error while checking for like in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if (!likeExists) {
+		rt.baseLogger.WithError(err).Error("UnlikePost: Like doesn't exist in db")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

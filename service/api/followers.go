@@ -275,7 +275,7 @@ func (rt *_router) isFollowing(w http.ResponseWriter, r *http.Request, ps httpro
 	} 
 
 	// Send the response
-	var response = struct {isFollowing bool}{followExists}
+	var response = GetExistResult{Exists: followExists}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
@@ -407,7 +407,7 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 	// Authentification as user with userId fid
 	identifier, err := ParseIdentifier(r)
 	if err != nil {
-		rt.baseLogger.WithError(err).Error("Unfollow: Failed to parse identifier from reques")
+		rt.baseLogger.WithError(err).Error("Unfollow: Failed to parse identifier from request")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -419,6 +419,18 @@ func (rt *_router) Unfollow(w http.ResponseWriter, r *http.Request, ps httproute
 	} else if !authorized {
 		rt.baseLogger.Error("Unfollow: User unauthorized to access resource")
 		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Check whether follow exists in db
+	followExists, err := rt.db.FollowExists(uid, fid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("Unfollow: Error while checking for follow in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if (!followExists) {
+		rt.baseLogger.WithError(err).Error("Unfollow: Follow doesn't exist in db")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

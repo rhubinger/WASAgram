@@ -5,7 +5,7 @@ export default {
 	data() {
 		return {
 			postId: null,
-			comments: null,
+			comments: [],
 		}
 	},
 	methods: {
@@ -18,15 +18,14 @@ export default {
 					username: null,
 					datetime: null,
 					comment: document.getElementById("commentInput").value,
-
-				}, { headers: {
-				'Authorization': `Bearer ${store.identifier}`,
-				},
-			});
-			document.getElementById("commentInput").reset(); 
+					}, { headers: {
+					'Authorization': `Bearer ${store.identifier}`,
+					},
+				});
 			} catch (e) {
 				console.log(e.toString());
 			}
+			document.getElementById("commentForm").reset(); 
 		},
 	},
 
@@ -62,8 +61,9 @@ export default {
 			<Post id="post" :pid="$route.params.pid" />
 		</div>
 		<div>
-			<div v-for="comment in this.comments">
-				<Comment :cid="comment.commentId" :pid="comment.postId" :uid="comment.userId" :username="comment.username" :datetime="comment['date-time']" :comment="comment.comment"/>
+			<div class="container" v-for="comment in this.comments">
+				<Comment class="item" :cid="comment.commentId" :pid="comment.postId" :uid="comment.userId" :username="comment.username" 
+				:datetime="comment['date-time']" :comment="comment.comment"/>
 			</div>
 		</div>
 		<div>
@@ -77,4 +77,10 @@ export default {
 </template>
 
 <style>
+	.container {
+	padding: 10px;
+	}
+	.item {
+	padding: 10px;
+	}
 </style>

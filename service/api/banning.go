@@ -171,7 +171,7 @@ func (rt *_router) isBanned(w http.ResponseWriter, r *http.Request, ps httproute
 	}
 
 	// Send the response
-	var response = struct {isBanned bool}{banExists}
+	var response = GetExistResult{Exists: banExists}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)

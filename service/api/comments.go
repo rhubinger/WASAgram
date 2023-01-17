@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/rhubinger/WASAgram/service/schemes"
 )
@@ -233,6 +233,19 @@ func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps http
 	} else if !commentExists {
 		rt.baseLogger.Error("DeleteComment: Comment doesn't exist in db")
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+
+	// Check whether comment exists in db
+	commentExists, err := rt.db.CommentExists(cid)
+	if err != nil {
+		rt.baseLogger.WithError(err).Error("DeleteComment: Error while checking for comment in db")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if (!commentExists) {
+		rt.baseLogger.WithError(err).Error("DeleteComment: Comment doesn't exist in db")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

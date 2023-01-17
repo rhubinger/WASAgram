@@ -6,8 +6,8 @@ import dateTime from '../services/datetime.js';
 export default {
 	data() {
 		return {
-			followedCount: 0,
-			followed: [],
+			likeCount: 0,
+			likes: [],
 		}
 	},
 
@@ -16,12 +16,12 @@ export default {
 
 	async created() {
 		try {
-			let response = await this.$axios.get("/users/" + this.$route.params.uid + "/followed", { headers: {
+			let response = await this.$axios.get("/posts/" + this.$route.params.pid + "/likes", { headers: {
 				'Authorization': `Bearer ${store.identifier}` ,
 				},
 			});
-			this.followedCount = response.data.length;
-			this.followed = response.data.users;
+			this.likeCount = response.data.length;
+			this.likes = response.data.users;
 		} catch (e) {
 			console.log(e.toString());
 		}
@@ -31,11 +31,13 @@ export default {
 
 <template>
 	<div>
-		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">{{ followedCount }} Followed </h1>
+		<div
+			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+			<h1 v-if="this.likeCount != 1" class="h2">{{this.likeCount}} Likes</h1>
+			<h1 v-else class="h2">1 like</h1>
 		</div>
 		<div>
-			<div class="container" v-for="user in followed">
+			<div class="container" v-for="user in likes">
 				<User class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
 			</div>
 		</div>

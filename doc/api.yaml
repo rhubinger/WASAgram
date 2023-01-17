@@ -357,7 +357,7 @@ paths:
                 description: Does user1 (fid) follow user2 (uid)
                 type: object
                 properties:
-                  isFollowing:
+                  exists:
                     description: "Is the user followed by the other user"
                     type: boolean
                     example: true
@@ -488,7 +488,7 @@ paths:
                   description: Does user1 (uid) ban user2 (bid)
                   type: object
                   properties:
-                    isBanned:
+                    exists:
                       description: "Is the user banned by the other user"
                       type: boolean
                       example: true
@@ -706,7 +706,7 @@ paths:
                   description: Did the user like the post
                   type: object
                   properties:
-                    hasLiked:
+                    exists:
                       description: "Does the user like the post"
                       type: boolean
                       example: true
@@ -1055,7 +1055,7 @@ components:
           type: integer
           example: 8
           minimum: 0
-        list:
+        users:
           description: "The list of users"
           type: array
           minItems: 1

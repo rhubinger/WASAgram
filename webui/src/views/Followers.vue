@@ -1,12 +1,54 @@
 <script>
-export default {}
+import axios from 'axios';
+import store from '../services/store.js';
+import dateTime from '../services/datetime.js';
+
+export default {
+	data() {
+		return {
+			followerCount: 0,
+			followers: [],
+		}
+	},
+
+	methods: {
+	},
+
+	async created() {
+		try {
+			let response = await this.$axios.get("/users/" + this.$route.params.uid + "/followers", { headers: {
+				'Authorization': `Bearer ${store.identifier}` ,
+				},
+			});
+			this.followerCount = response.data.length;
+			this.followers = response.data.users;
+		} catch (e) {
+			console.log(e.toString());
+		}
+	},
+}
 </script>
 
 <template>
 	<div>
-		<h1 class="h2">Followers</h1>
+		<div
+			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+			<h1 v-if="this.followerCount != 1" class="h2">{{this.followerCount}} Followers</h1>
+			<h1 v-else class="h2">1 Follower</h1>
+		</div>
+		<div>
+			<div class="container" v-for="user in followers">
+				<User class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
+			</div>
+		</div>
 	</div>
 </template>
 
 <style>
+	.container {
+	padding: 10px;
+	}
+	.item {
+	padding: 10px;
+	}
 </style>

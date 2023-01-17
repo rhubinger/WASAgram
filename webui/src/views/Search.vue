@@ -39,12 +39,18 @@ export default {
 			<input type="submit" value="search" @click="search()">
 		</form>
 		<div>
-			<div v-for="user in searchResult">
-				<User :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
+			<div class="container" v-for="user in searchResult">
+				<User class="item" :uid="user.userId" :username="user.name" :posts="user.posts" :followers="user.followers" :followed="user.followed" />
 			</div>
 		</div>
 	</div>
 </template>
 
 <style>
+	.container {
+	padding: 10px;
+	}
+	.item {
+	padding: 10px;
+	}
 </style>

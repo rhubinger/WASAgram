@@ -121,7 +121,7 @@ func (rt *_router) GetUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
+	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
 	if err != nil {
 		rt.baseLogger.WithError(err).Error("GetUser: Error occured during authorization")
 		w.WriteHeader(http.StatusInternalServerError)

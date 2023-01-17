@@ -13,6 +13,11 @@ type GetCountResult struct {
 	Count int `json:"count"`
 }
 
+// Get exists result
+type GetExistResult struct {
+	Exists bool `json:"exists"`
+}
+
 // Login
 type LoginRequest struct {
 	UserId string `json:"userId"`

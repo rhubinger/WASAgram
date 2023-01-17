@@ -17,20 +17,14 @@ export default {
             deleted: false,
 		}
 	},
+    
 	methods: {
-		async like() {
-            if (!this.liked) {
-			    this.likes++;
-                this.liked = true;
-            }
-            else {
-                this.likes--;
-                this.liked = false;
-            }
-		},
-
         openPost() {
 			this.$router.push('/posts/' + this.pid);
+        },
+
+        getLikes(){
+			this.$router.push('/posts/' + this.pid + '/likes');
         },
 
         async deletePost() {
@@ -45,9 +39,34 @@ export default {
 			} catch (e) {
 				console.log(e.toString());
 			}
-			this.$router.push('/profile/' + store.userId);
             this.deleted = true;
-        }
+			this.$router.push('/profile/' + store.userId);
+        },
+        async likeBtnHandler(){
+            // Not liked by user
+            if(!this.liked) {
+                try {
+                    let response = await this.$axios.put("/posts/" + this.pid + "/likes/" + store.userId, {}, { headers: {
+                        'Authorization': `Bearer ${store.identifier}` ,
+                        },
+                    });
+                } catch (e) {
+                    console.log(e.toString());
+                }
+                this.likes++;
+            } else {
+                try {
+                    let response = await this.$axios.delete("/posts/" + this.pid + "/likes/" + store.userId, { headers: {
+                        'Authorization': `Bearer ${store.identifier}` ,
+                        },
+                    });
+                } catch (e) {
+                    console.log(e.toString());
+                }
+                this.likes--;
+            }
+            this.liked = !this.liked;
+        },
 	},
 
     async created() {
@@ -97,9 +116,13 @@ export default {
             <img class="picture" :src="this.pictureBlob"/><br>
         </div>
         <div>
-            <button @click="like()">
-                Like ({{ likes }})
+            <button v-on:click.stop="likeBtnHandler()">
+                <div v-if="!this.liked"> Like </div>
+                <div v-else> Remove Like </div>
             </button> 
+            <a v-on:click.stop="getLikes()">
+                #Likes: {{ likes }}
+            </a> 
             #Comments: {{ comments }}
         </div>
         <div>

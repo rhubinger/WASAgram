@@ -1,32 +1,52 @@
 <script>
-export default {}
+import axios from 'axios';
+import store from '../services/store.js';
+import dateTime from '../services/datetime.js';
+
+export default {
+	data() {
+		return {
+			posts: [],
+		}
+	},
+
+	methods: {
+	},
+
+	async created() {
+		try {
+			let response = await this.$axios.get("/users/" + this.$route.params.uid + "/stream?dateTime=" + dateTime.now(), { headers: {
+				'Authorization': `Bearer ${store.identifier}` ,
+				},
+			});
+			this.posts = response.data;
+		} catch (e) {
+			console.log(e.toString());
+		}
+	},
+}
 </script>
 
 <template>
 	<div>
-		<div
-			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Stream</h1>
-			<div class="btn-toolbar mb-2 mb-md-0">
-				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
-						Refresh
-					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="exportList">
-						Export
-					</button>
-				</div>
-				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
-					</button>
-				</div>
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+			<h1 class="h2">Your stream</h1>
+		</div>
+		<div class="grid-container">
+			<div class="grid-item" v-for="post in posts">
+				<Post :pid="post.postId" :allowDelete="false" />
 			</div>
 		</div>
-
-		<User :uid="'Alan Turing'"></User>
 	</div>
 </template>
 
 <style>
+	.grid-container {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	padding: 10px;
+	}
+	.grid-item {
+	padding: 20px;
+	}
 </style>
