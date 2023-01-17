@@ -12,7 +12,7 @@ export default {
 				});
 				store.identifier = response.data.identifier;
 				store.userId = uid;
-				document.getElementById("loginForm").reset(); 
+				document.getElementById("loginForm").reset();
 				this.$router.push('/profile/' + uid);
 			} catch (e) {
 				console.log(e.toString());

@@ -1,7 +1,7 @@
 <script>
 import store from '../services/store.js'
 export default {
-    props: ['pid'],
+    props: ['pid', 'allowDelete'],
 
 	data: function() {
 		return {
@@ -14,6 +14,7 @@ export default {
             likes: 0,
             liked: false,
             comments: 0,
+            deleted: false,
 		}
 	},
 	methods: {
@@ -30,6 +31,22 @@ export default {
 
         openPost() {
 			this.$router.push('/posts/' + this.pid);
+        },
+
+        async deletePost() {
+            if(!confirm("Are you sure that you want to delete this post?")){
+                return
+            }
+			try {
+				let response = await this.$axios.delete("/posts/" + this.pid, { headers: {
+					'Authorization': `Bearer ${store.identifier}` ,
+					},
+				});
+			} catch (e) {
+				console.log(e.toString());
+			}
+			this.$router.push('/profile/' + store.userId);
+            this.deleted = true;
         }
 	},
 
@@ -66,22 +83,32 @@ export default {
 </script>
 
 <template>
-	<div class="post" @click="openPost()">
+	<div v-if="!deleted" class="post" @click="openPost()">
         <div>
             <div> {{username}} </div>
             <div> {{uid}}</div>
         </div>
         <div>
+            <button v-on:click.stop="deletePost()">
+                delete
+            </button>
+        </div>
+        <div>
             <img class="picture" :src="this.pictureBlob"/><br>
         </div>
         <div>
-            <button @click="like()">Like ({{ likes }})</button> 
+            <button @click="like()">
+                Like ({{ likes }})
+            </button> 
             #Comments: {{ comments }}
         </div>
         <div>
             <div> {{datetime}} </div>
             <div> {{caption}} </div>
         </div>
+    </div>
+    <div v-else>
+        Post deleted
     </div>
 </template>
 

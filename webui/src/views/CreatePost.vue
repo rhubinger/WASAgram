@@ -35,21 +35,9 @@ export default {
 			} catch (e) {
 				console.log(e.toString());
 			}
+			this.$router.push('/profile/' + store.userId);
 		}
 	},
-
-	async created() {
-		try {
-			console.log(dateTime.now());
-			let userposts = await this.$axios.get("/users/" + store.userId + "/posts?dateTime=" + dateTime.now(), { headers: {
-				'Authorization': `Bearer ${store.identifier}` ,
-				},
-			});
-			this.posts = userposts.data;
-		} catch (e) {
-			console.log(e.toString());
-		}
-	}
 }
 </script>
 

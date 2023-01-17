@@ -42,7 +42,7 @@ func (db *appdbimpl) GetPostByPictureId(pictureId string) (schemes.Post, error) 
 func (db *appdbimpl) GetPosts(uid string, dateTime string) ([]schemes.Post, error) {
 	rows, err := db.c.Query(`SELECT p.postId, p.userId, u.name, p.uploadTime, p.caption, p.pictureId, p.likes, p.comments
 							 FROM posts p, users u
-							 WHERE p.userId = p.userId AND p.userId = ? AND p.uploadTime < ?
+							 WHERE p.userId = u.userId AND p.userId = ? AND p.uploadTime < ?
 							 ORDER BY p.uploadTime DESC;`, uid, dateTime)
 	if err != nil {
 		return nil, err
