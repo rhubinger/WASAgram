@@ -54,12 +54,6 @@ func (db *appdbimpl) GetComments(pid string) ([]schemes.Comment, error) {
 	return comments, err
 }
 
-func (db *appdbimpl) GetCommentCount(pid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT comments FROM posts WHERE postId = ?", pid).Scan(&count)
-	return count, err
-}
-
 func (db *appdbimpl) IncrementCommentCount(pid string) error {
 	_, err := db.c.Exec("UPDATE posts SET comments = comments + 1 WHERE postId = ?;", pid)
 	return err

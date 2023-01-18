@@ -63,56 +63,6 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func (rt *_router) GetBannedCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Parse parameters
-	uid := ps.ByName("uid")
-	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else if userExists, err := rt.db.UserExists(uid); err != nil {
-		rt.baseLogger.Error("GetBannedCount: Error while checking for user in db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !userExists {
-		rt.baseLogger.Error("GetBannedCount: User doesn't exist in db")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	// Authentification as user with userId uid
-	identifier, err := ParseIdentifier(r)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetBannedCount: Failed to parse identifier from reques")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	authorized, err := rt.db.AuthorizeAsUser(identifier, uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetBannedCount: Error occured during authorization")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !authorized {
-		rt.baseLogger.Error("GetBannedCount: User unauthorized to access resource")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// Get count of banned account
-	count, err := rt.db.GetBannedCount(uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetBannedCount: failed to get banned count from db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Send the response
-	var response = GetCountResult{Count: count}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
-}
-
 func (rt *_router) isBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse parameters
 	uid := ps.ByName("uid")

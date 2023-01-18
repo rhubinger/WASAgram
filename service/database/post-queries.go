@@ -91,12 +91,6 @@ func (db *appdbimpl) GetStream(uid string, dateTime string) ([]schemes.Post, err
 	return posts, err
 }
 
-func (db *appdbimpl) GetPostCount(uid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT posts FROM users WHERE userId = ?", uid).Scan(&count)
-	return count, err
-}
-
 func (db *appdbimpl) IncrementPostCount(uid string) error {
 	_, err := db.c.Exec("UPDATE users SET posts = posts + 1 WHERE userId = ?", uid)
 	return err

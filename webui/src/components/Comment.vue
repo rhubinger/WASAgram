@@ -27,7 +27,7 @@ export default {
             this.deleted = true;
         },
     },
-
+    
     async created (){
         this.allowDelete = this.uid == store.userId;
     },

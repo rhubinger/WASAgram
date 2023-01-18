@@ -57,7 +57,6 @@ type AppDatabase interface {
 	GetPostByPictureId(pictureId string) (schemes.Post, error)
 	GetStream(uid string, dateTime string) ([]schemes.Post, error)
 	GetPosts(uid string, dateTime string) ([]schemes.Post, error)
-	GetPostCount(uid string) (int, error)
 	IncrementPostCount(uid string) error
 	DecrementPostCount(uid string) error
 
@@ -68,7 +67,6 @@ type AppDatabase interface {
 
 	GetComment(cid string) (schemes.Comment, error)
 	GetComments(pid string) ([]schemes.Comment, error)
-	GetCommentCount(pid string) (int, error)
 	IncrementCommentCount(pid string) error
 	DecrementCommentCount(pid string) error
 
@@ -77,12 +75,10 @@ type AppDatabase interface {
 	Unfollow(uid string, fid string) error
 
 	GetFollowers(uid string) ([]schemes.User, error)
-	GetFollowerCount(uid string) (int, error)
 	IncrementFollowerCount(uid string) error
 	DecrementFollowerCount(uid string) error
 
 	GetFollowed(uid string) ([]schemes.User, error)
-	GetFollowedCount(uid string) (int, error)
 	IncrementFollowedCount(uid string) error
 	DecrementFollowedCount(uid string) error
 
@@ -91,7 +87,6 @@ type AppDatabase interface {
 	Unban(uid string, bid string) error
 
 	GetBanned(uid string) ([]schemes.User, error)
-	GetBannedCount(uid string) (int, error)
 
 	// Likes
 	Like(pid string, uid string) error
@@ -99,7 +94,6 @@ type AppDatabase interface {
 	DeleteLikes(pid string) error
 
 	GetLikes(pid string) ([]schemes.User, error)
-	GetLikeCount(pid string) (int, error)
 	IncrementLikeCount(pid string) error
 	DecrementLikeCount(pid string) error
 

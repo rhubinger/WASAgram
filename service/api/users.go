@@ -210,56 +210,6 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 	_ = json.NewEncoder(w).Encode(posts)
 }
 
-func (rt *_router) GetPostCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Parse Parameters
-	uid := ps.ByName("uid")
-	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else if userExists, err := rt.db.UserExists(uid); err != nil {
-		rt.baseLogger.Error("GetPostCount: Error while checking for user in db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !userExists {
-		rt.baseLogger.Error("GetPostCount: User doesn't exist in db")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	// Authentification as not banned by the user with userId uid
-	identifier, err := ParseIdentifier(r)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetPostCount: Failed to parse identifier from reques")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetPostCount: Error occured during authorization")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !authorized {
-		rt.baseLogger.Error("GetPostCount: User unauthorized to access resource")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// Get count of posts
-	count, err := rt.db.GetPostCount(uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetPostCount: error while getting post count from db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Send the response
-	var response = GetCountResult{Count: count}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
-}
-
 func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")

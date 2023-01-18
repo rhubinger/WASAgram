@@ -43,12 +43,6 @@ func (db *appdbimpl) GetLikes(pid string) ([]schemes.User, error) {
 	return users, err
 }
 
-func (db *appdbimpl) GetLikeCount(pid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT likes FROM posts WHERE postId = ?", pid).Scan(&count)
-	return count, err
-}
-
 func (db *appdbimpl) IncrementLikeCount(pid string) error {
 	_, err := db.c.Exec("UPDATE posts SET likes = likes + 1 WHERE postId = ?;", pid)
 	return err

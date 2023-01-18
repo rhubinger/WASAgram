@@ -38,12 +38,6 @@ func (db *appdbimpl) GetFollowers(uid string) ([]schemes.User, error) {
 	return users, err
 }
 
-func (db *appdbimpl) GetFollowerCount(uid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT followers FROM users WHERE userId = ?", uid).Scan(&count)
-	return count, err
-}
-
 func (db *appdbimpl) IncrementFollowerCount(uid string) error {
 	_, err := db.c.Exec("UPDATE users SET followers = followers + 1 WHERE userId = ?;", uid)
 	return err
@@ -78,12 +72,6 @@ func (db *appdbimpl) GetFollowed(uid string) ([]schemes.User, error) {
 	}
 
 	return users, err
-}
-
-func (db *appdbimpl) GetFollowedCount(uid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT followed FROM users WHERE userId = ?", uid).Scan(&count)
-	return count, err
 }
 
 func (db *appdbimpl) IncrementFollowedCount(uid string) error {

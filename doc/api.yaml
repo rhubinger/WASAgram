@@ -132,38 +132,6 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-        
-  /users/{uid}/posts/count:
-    parameters:
-      - $ref: "#/components/parameters/userId"
-    get:
-      tags: ["Users"]
-      operationId: getPostCount
-      summary: Get the number of posts
-      description: |
-        Obtain the latest posts of the accounts, the user with userId uid follows in reverse chronological order.
-        If the query parameter dateTime is specified only posts before the dateTime will be returned.
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of created posts
-          content:
-            application/json:
-              schema:
-                description: The count of posts
-                type: object
-                properties:
-                  count:
-                    description: "The count of posts"
-                    type: integer
-                    example: 8
-                    minimum: 0
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
   
   /users/{uid}/stream:
     parameters:
@@ -247,37 +215,6 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-        
-  /users/{uid}/followed/count:
-    parameters:
-      - $ref: "#/components/parameters/userId"
-    get:
-      tags: ["Followers"]
-      operationId: getFollowedCount
-      summary: Get the number of followed accounts
-      description: |
-        Obtain the number of accounts followed by the user with the userId uid
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of followed accounts
-          content:
-            application/json:
-              schema:
-                description: The count of followed
-                type: object
-                properties:
-                  count:
-                    description: "The count of followed"
-                    type: integer
-                    example: 8
-                    minimum: 0
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
   
   /users/{uid}/followers:
     parameters:
@@ -299,37 +236,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/userlist"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  
-  /users/{uid}/followers/count:
-    parameters:
-      - $ref: "#/components/parameters/userId"
-    get:
-      tags: ["Followers"]
-      operationId: getFollowersCount
-      summary: Get the number of following accounts
-      description: |
-        Obtain the number of accounts following the user with the userId uid
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of following accounts
-          content:
-            application/json:
-              schema:
-                description: The count of followers
-                type: object
-                properties:
-                  count:
-                    description: "The count of followers"
-                    type: integer
-                    example: 8
-                    minimum: 0
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
@@ -430,37 +336,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/userlist"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-       
-  /users/{uid}/banned/count:
-    parameters:
-      - $ref: "#/components/parameters/userId"
-    get:
-      tags: ["Banning"]
-      operationId: getBannedCount
-      summary: Get the number of banned accounts
-      description: |
-        Obtain the number of accounts the user with the userId uid has banned
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of banned accounts
-          content:
-            application/json:
-              schema:
-                description: The count of banned accounts
-                type: object
-                properties:
-                  count:
-                    description: "The count of banned accounts"
-                    type: integer
-                    example: 8
-                    minimum: 0
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: User not found }
@@ -652,37 +527,6 @@ paths:
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
-               
-  /posts/{pid}/likes/count:
-    parameters:
-      - $ref: "#/components/parameters/postId"
-    get:
-      tags: ["Likes"]
-      operationId: getLikeCount
-      summary: Get the number of likes 
-      description: |
-        Obtain the number of likes the post with the postId pid has
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of likes
-          content:
-            application/json:
-              schema:
-                description: The count of likes
-                type: object
-                properties:
-                  count:
-                    description: "The count of likes"
-                    type: integer
-                    example: 8
-                    minimum: 0
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
 
   /posts/{pid}/isLikedBy/{uid}:
     parameters:
@@ -815,37 +659,6 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/UnauthorizedRequest" }
         "404": { description: Post not found }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  
-  /posts/{pid}/comments/count:
-    parameters:
-      - $ref: "#/components/parameters/postId"
-    get:
-      tags: ["Comments"]
-      operationId: getCommentCount
-      summary: Get the number of comments
-      description: |
-        Obtain the number of comments the post with the postId pid has
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: |
-            Number of comments
-          content:
-            application/json:
-              schema:
-                description: The count of comments
-                type: object
-                properties:
-                  count:
-                    description: "The count of comments"
-                    type: integer
-                    example: 8
-                    minimum: 0
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/UnauthorizedRequest" }
-        "404": { description: User not found }
         "500": { $ref: "#/components/responses/InternalServerError" }
 
   /posts/{pid}/comments/{cid}:

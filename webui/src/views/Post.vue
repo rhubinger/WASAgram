@@ -32,6 +32,18 @@ export default {
 			} catch (e) {
 				console.log(e.toString());
 			}
+
+			this.comments = [];
+			try {
+				let response = await this.$axios.get("/posts/" + this.$route.params.pid + "/comments", { headers: {
+					'Authorization': `Bearer ${store.identifier}`,
+					},
+				});
+				this.comments = response.data.comments;
+			} catch (e) {
+				console.log(e.toString());
+			}
+
 			document.getElementById("commentForm").reset(); 
 		},
 	},

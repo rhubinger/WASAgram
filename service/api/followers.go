@@ -63,56 +63,6 @@ func (rt *_router) GetFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func (rt *_router) GetFollowedCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Parse Parameters
-	uid := ps.ByName("uid")
-	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else if userExists, err := rt.db.UserExists(uid); err != nil {
-		rt.baseLogger.Error("GetFollowedCount: Error while checking for user in db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !userExists {
-		rt.baseLogger.Error("GetFollowedCount: User doesn't exist in db")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	// Authentification as not banned by the user with userId uid
-	identifier, err := ParseIdentifier(r)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowedCount: Failed to parse identifier from reques")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowedCount: Error occured during authorization")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !authorized {
-		rt.baseLogger.Error("GetFollowedCount: User unauthorized to access resource")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// Get number of followed
-	count, err := rt.db.GetFollowedCount(uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowedCount: error while getting followed count from db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Send the response
-	var response = GetCountResult{Count: count}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
-}
-
 func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Parse Parameters
 	uid := ps.ByName("uid")
@@ -162,56 +112,6 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Send the response
 	var response = schemes.UserList{Length: len(followers), Users: followers}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
-}
-
-func (rt *_router) GetFollowerCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Parse Parameters
-	uid := ps.ByName("uid")
-	if !schemes.ValidUserId(uid) {
-		rt.baseLogger.Error("UserId (uid) invalid")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else if userExists, err := rt.db.UserExists(uid); err != nil {
-		rt.baseLogger.Error("GetFollowerCount: Error while checking for user in db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !userExists {
-		rt.baseLogger.Error("GetFollowerCount: User doesn't exist in db")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	// Authentification as not banned by the user with userId uid
-	identifier, err := ParseIdentifier(r)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowerCount: Failed to parse identifier from reques")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowerCount: Error occured during authorization")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !authorized {
-		rt.baseLogger.Error("GetFollowerCount: User unauthorized to access resource")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// Get count of followers
-	count, err := rt.db.GetFollowerCount(uid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetFollowerCount: error while getting follower count from db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Send the response
-	var response = GetCountResult{Count: count}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)

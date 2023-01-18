@@ -149,62 +149,6 @@ func (rt *_router) GetComments(w http.ResponseWriter, r *http.Request, ps httpro
 	_ = json.NewEncoder(w).Encode(response)
 }
 
-func (rt *_router) GetCommentCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Get post from db
-	pid := ps.ByName("pid")
-	if !schemes.ValidId(pid) {
-		rt.baseLogger.Error("PostId (pid) invalid")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	} else if postExists, err := rt.db.PostExists(pid); err != nil {
-		rt.baseLogger.Error("GetCommentCount: Error while checking for post in db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !postExists {
-		rt.baseLogger.Error("GetCommentCount: Post doesn't exist in db")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	// Authentification as not banned by the user with userId post.UserId
-	identifier, err := ParseIdentifier(r)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetCommentCount: Failed to parse identifier from reques")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	post, err := rt.db.GetPost(pid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetCommentCount: Failed to get post from db")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	authorized, err := rt.db.AuthorizeAsNotBanned(identifier, post.UserId)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetCommentCount: Error occured during authorization")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !authorized {
-		rt.baseLogger.Error("GetCommentCount: User unauthorized to access resource")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	// Get count of comments from db
-	count, err := rt.db.GetCommentCount(pid)
-	if err != nil {
-		rt.baseLogger.WithError(err).Error("GetCommentCount: failed to get comment count from db")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Send the response
-	var response = GetCountResult{Count: count}
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("content-type", "application/json")
-	_ = json.NewEncoder(w).Encode(response)
-}
-
 func (rt *_router) DeleteComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Get post from db
 	pid := ps.ByName("pid")

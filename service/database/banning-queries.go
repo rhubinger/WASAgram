@@ -37,9 +37,3 @@ func (db *appdbimpl) GetBanned(uid string) ([]schemes.User, error) {
 
 	return users, err
 }
-
-func (db *appdbimpl) GetBannedCount(uid string) (int, error) {
-	var count int
-	err := db.c.QueryRow("SELECT COUNT(*) FROM bans WHERE userId = ?", uid).Scan(&count)
-	return count, err
-}
