@@ -200,8 +200,8 @@ func (rt *_router) GetPosts(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 	// Shorten if too many posts
-	if len(posts) > 12 {
-		posts = posts[0:12]
+	if len(posts) > 1000 {
+		posts = posts[0:1000]
 	}
 
 	// Send the response
@@ -264,8 +264,8 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 	// Shorten if too many posts
-	if len(stream) > 12 {
-		stream = stream[0:12]
+	if len(stream) > 1000 {
+		stream = stream[0:1000]
 	}
 
 	// Send the response
