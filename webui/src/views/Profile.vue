@@ -84,7 +84,7 @@ export default {
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 			<h1 class="h2" v-if="ownprofile">Your profile</h1>
 			<h1 class="h2" v-else>{{this.user.name}}'s profile ({{this.$route.params.uid}})</h1> 
-			<h5> followed: {{ this.user.followed }} | followers: {{ this.user.followers }} | posts: {{ this.user.posts }}</h5> 
+			<h5 class="stats"> followed: {{ this.user.followed }} | followers: {{ this.user.followers }} | posts: {{ this.user.posts }}</h5> 
 			<div class="btn-group me-2">
 				<RouterLink v-if="ownprofile" to="/posts/create" class="nav-link">
 					<button type="button" class="btn btn-sm btn-outline-primary">
@@ -107,11 +107,13 @@ export default {
 
 <style>
 	.grid-container {
-	display: grid;
-	grid-template-columns: auto auto auto;
-	padding: 10px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-auto-flow: column;
+		padding: 10px;
 	}
 	.grid-item {
-	padding: 20px;
+		padding: 20px;
+		text-align: center;
 	}
 </style>

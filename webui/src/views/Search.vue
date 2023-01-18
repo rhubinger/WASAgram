@@ -37,12 +37,12 @@ export default {
 	<div>
 		<div
 			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Search</h1>
+			<h1 class="h2">Search User</h1>
 		</div>
         <form id="searchForm" onsubmit="return false">
-			<label for="Search">Search:</label>
-			<input type="text" id="searchString" name="searchstring" value="Alan">
-			<input type="submit" value="search" @click="search()">
+			<label for="Search"><b>Searchstring:</b></label><br>
+			<input type="text" id="searchString" name="searchstring" value="Alan"><br>
+			<input type="submit" class="btn btn-sm btn-primary" value="search" @click="search()">
 		</form>
 		<div>
 			<div class="container" v-for="user in searchResult">

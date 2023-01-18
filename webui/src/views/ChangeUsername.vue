@@ -54,15 +54,19 @@ export default {
 		</div>
 	</div>
 
-    <div>
-        Current Name: {{ this.user.name }}
+    <div class="info">
+        Current Name: <br>
+		<b>{{ this.user.name }}</b> <br>
     </div>
 	<form id="changeNameForm" onsubmit="return false">
-		<label for="newName">New Username:</label>
+		<label for="newName">New Username:</label><br>
         <input type="text" id="newName" name="newName" value="new user"><br>
-        <input type="submit" value="Post" @click="changeUsername">
+        <input type="submit" class="btn btn-sm btn-primary" value="Post" @click="changeUsername">
     </form>
 </template>
 
 <style>
+.info{
+	padding-bottom: 10px;
+}
 </style>

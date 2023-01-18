@@ -1,4 +1,5 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
+import Login from '../views/Login.vue'
 import Profile from '../views/Profile.vue'
 import Stream from '../views/Stream.vue'
 import Post from '../views/Post.vue'
@@ -13,7 +14,7 @@ import Likes from '../views/Likes.vue'
 const router = createRouter({
 	history: createWebHashHistory(import.meta.env.BASE_URL),
 	routes: [
-		{path: '/', component: Stream},
+		{path: '/', component: Login},
 		{path: '/search', component: Search},
 		{path: '/profile/:uid', component: Profile},
 		{path: '/stream/:uid', component: Stream},

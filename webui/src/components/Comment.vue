@@ -35,25 +35,23 @@ export default {
 </script>
 
 <template>
-    <div class="comment">
-        <div v-if="!this.deleted">
-            <div>
-                <div> {{ this.username }} </div>
-                <div> {{ this.uid }} </div>
-            </div>
-            <div>
-                <div> {{ this.comment }}</div>
-                <div> {{ this.datetime }}</div>
-            </div>
-            <div>
-                <button v-if="allowDelete" type="button" v-on:click.stop="deleteComment()">
-                    delete
-                </button> 
-            </div>
+    <div v-if="!this.deleted" class="comment">
+        <div>
+            <div> <b>{{ this.username }}</b> </div>
+            <div> {{ this.uid }} </div>
         </div>
-        <div v-else>
-            Comment deleted
+        <div>
+            <div class="text"> {{ this.comment }}</div>
+            <div> {{ this.datetime }}</div>
         </div>
+        <div>
+            <button v-if="allowDelete" type="button" class="btn btn-sm btn-danger" v-on:click.stop="deleteComment()">
+                delete
+            </button> 
+        </div>
+    </div>
+    <div v-else class="deleted">
+        Comment deleted
     </div>
 </template>
 
@@ -61,5 +59,12 @@ export default {
 .comment{
     background-color: lightgrey;
     border-radius: 8px;
+}
+.deleted{
+    background-color: rgb(230, 120, 120);
+    border-radius: 8px;
+}
+.text{
+    margin: 10px;
 }
 </style>

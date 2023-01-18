@@ -6,7 +6,7 @@ export default {
 
 	data: function() {
 		return {
-            followed: false,
+            followedUser: false,
             banned: false,
 		}
 	},
@@ -17,7 +17,7 @@ export default {
 
 		async followBtnHandler(){
             // Not followed by user
-            if(!this.followed) {
+            if(!this.followedUser) {
                 try {
                     let response = await this.$axios.put("/users/" + this.uid + "/followers/" + store.userId, {}, { headers: {
                         'Authorization': `Bearer ${store.identifier}` ,
@@ -36,7 +36,7 @@ export default {
                     console.log(e.toString());
                 }
             }
-            this.followed = !this.followed;
+            this.followedUser = !this.followedUser;
         },
         async banBtnHandler(){
             // Not banned by user
@@ -96,17 +96,16 @@ export default {
 <template>
 	<div class="user" @click="openProfile">
         <div>
-            {{ this.username }} - {{ this.uid }}
+            <p class="left"> <b>{{ this.username }}</b> - {{ this.uid }} </p>
+            <p class="right"> Posts: {{ this.posts }} | Followers: {{ this.followed }} | Followed: {{ this.followers }} </p>
         </div>
+        <div style="clear: both;"></div>
         <div>
-            Posts: {{ this.posts }} | Followers: {{ this.followed }} | Followed: {{ this.followers }}
-        </div>
-        <div>
-            <button type="button" v-on:click.stop="followBtnHandler()"> 
-                <div v-if="!this.followed"> Follow </div>
+            <button type="button" class="btn btn-sm btn-primary" v-on:click.stop="followBtnHandler()"> 
+                <div v-if="!this.followedUser"> Follow </div>
 				<div v-else> Followed </div>
             </button>
-            <button type="button" v-on:click.stop="banBtnHandler()"> 
+            <button type="button" class="btn btn-sm btn-danger" v-on:click.stop="banBtnHandler()"> 
                 <div v-if="!this.banned"> Ban </div>
 				<div v-else> Banned </div>
             </button>
@@ -118,5 +117,11 @@ export default {
 .user{
     background-color: lightgrey;
     border-radius: 8px;
+}
+.left{
+    float: left;
+}
+.right{
+    float: right;
 }
 </style>

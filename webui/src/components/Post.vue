@@ -104,11 +104,11 @@ export default {
 <template>
 	<div v-if="!deleted" class="post" @click="openPost()">
         <div>
-            <div> {{username}} </div>
+            <div> <b>{{username}}</b> </div>
             <div> {{uid}}</div>
         </div>
         <div>
-            <button v-on:click.stop="deletePost()">
+            <button class="btn btn-sm btn-danger" v-on:click.stop="deletePost()">
                 delete
             </button>
         </div>
@@ -116,7 +116,7 @@ export default {
             <img class="picture" :src="this.pictureBlob"/><br>
         </div>
         <div>
-            <button v-on:click.stop="likeBtnHandler()">
+            <button class="btn btn-sm btn-primary" v-on:click.stop="likeBtnHandler()">
                 <div v-if="!this.liked"> Like </div>
                 <div v-else> Remove Like </div>
             </button> 
@@ -126,25 +126,35 @@ export default {
             #Comments: {{ comments }}
         </div>
         <div>
+            <div class="caption"> {{caption}} </div>
             <div> {{datetime}} </div>
-            <div> {{caption}} </div>
         </div>
     </div>
-    <div v-else>
+    <div v-else class=deleted>
         Post deleted
     </div>
 </template>
 
 <style>
 .post{
-    background-color: lightgrey;
+    border-color: rgb(20, 120, 212);
+    border-style: solid;
     border-radius: 8px;
+    text-align: center;
 }
 .picture {
 	border-radius: 8px;
-    width: 80%;
-    height: auto;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 95%;
+    max-height: 450px * 1,3;
+	min-width: 0;
+	min-height: 0;
 }
+.deleted{
+    background-color: rgb(230, 120, 120);
+    border-radius: 8px;
+}
+.caption{
+    margin: 10px
+}
+
 </style>

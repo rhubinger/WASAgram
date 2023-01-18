@@ -63,21 +63,13 @@ export default {
 </script>
 
 <template>
-	<div>
-		<div
-			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Post</h1>
-			<div class="btn-toolbar mb-2 mb-md-0">
-				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
-					</button>
-				</div>
-			</div>
-		</div>
+	<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+		<h1 class="h2">Post</h1>
+	</div>
 
+	<div class="postView">
 		<div>
-			<Post id="post" :pid="$route.params.pid" />
+			<Post allign="center" justify="center" class="post" id="post" :pid="$route.params.pid" />
 		</div>
 		<div>
 			<div class="container" v-for="comment in this.comments">
@@ -89,17 +81,24 @@ export default {
 			<form id="commentForm" onsubmit="return false">
 				<label for="commentInput">Comment here:</label><br>
 				<input type="text" id="commentInput" name="commentInput" value="Nice Picture!"><br>
-				<input type="submit" value="comment" @click="postComment()">
+				<input type="submit" value="comment" class="btn btn-sm btn-primary" @click="postComment()">
 			</form>
 		</div>
 	</div>
 </template>
 
 <style>
-	.container {
+.postView {
+	text-align: center;
+}
+.post {
+	text-align: center;
+	max-width: 100%;
+}
+.container {
 	padding: 10px;
-	}
-	.item {
+}
+.item {
 	padding: 10px;
-	}
+}
 </style>

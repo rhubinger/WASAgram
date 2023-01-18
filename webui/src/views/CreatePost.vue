@@ -69,8 +69,8 @@ export default {
 		<label for="picture">Select a picture:</label>
 		<input type="file" id="picture" name="picture" accept="image/png" /><br>
 		<label for="caption">Caption:</label>
-        <input type="text" id="caption" name="caption" value="Nice day at the beach."><br>
-        <input type="submit" value="Post" @click="post">
+        <input type="text" id="caption" name="caption" size="150" value="Nice day at the beach."><br>
+		<input type="submit" class="btn btn-sm btn-primary" value="Post" @click="post">
     </form>
 </template>
 
