@@ -10,6 +10,13 @@ export default {
 	},
 	methods: {
 		async postComment() {
+			let comment = document.getElementById("commentInput").value;
+			let pattern = /.{1,140}/;
+			if(!pattern.test(comment)){
+				alert("The comment must follow the pattern: " + pattern + "!");
+				return;
+			}
+
 			try {
 				let post = await this.$axios.post("/posts/" + this.$route.params.pid + "/comments", {
 					commentId: null,
@@ -17,7 +24,7 @@ export default {
 					userId: store.userId,
 					username: null,
 					datetime: null,
-					comment: document.getElementById("commentInput").value,
+					comment: comment,
 					}, { headers: {
 					'Authorization': `Bearer ${store.identifier}`,
 					},

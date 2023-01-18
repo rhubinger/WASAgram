@@ -12,8 +12,13 @@ export default {
 
 	methods: {
 		async login() {
+			uid = document.getElementById("uid").value;
+			let pattern = /@[a-zA-z0-9_.]{3,16}/;
+			if(!pattern.test(uid)){
+				alert("The userId must follow the pattern: " + pattern + "!");
+				return;
+			}
 			try {
-				uid = document.getElementById("uid").value;
 				let response = await this.$axios.post("/login", {
 					userId: uid
 				});

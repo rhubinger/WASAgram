@@ -14,6 +14,12 @@ export default {
 		async search(){
 			try {
 				let searchstring = document.getElementById("searchString").value;
+				let pattern = /[@a-zA-z0-9-_]{1,30}/;
+				if(!pattern.test(searchstring)){
+					alert("The searchstring must follow the pattern: " + pattern + "!");
+					return;
+				}
+
 				let response = await this.$axios.get("/search?searchString=" + searchstring + "&uid=" + store.userId, { headers: {
 					'Authorization': `Bearer ${store.identifier}` ,
 					},
@@ -33,7 +39,7 @@ export default {
 			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 			<h1 class="h2">Search</h1>
 		</div>
-        <form id="loginForm" onsubmit="return false">
+        <form id="searchForm" onsubmit="return false">
 			<label for="Search">Search:</label>
 			<input type="text" id="searchString" name="searchstring" value="Alan">
 			<input type="submit" value="search" @click="search()">

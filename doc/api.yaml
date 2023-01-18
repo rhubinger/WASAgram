@@ -1095,9 +1095,9 @@ components:
           minLength: 19
           maxLength: 19
         caption:
-          description: "The list of comments"
+          description: "The description of the picture"
           type: string
-          pattern: "x*"
+          pattern: ".{1,140}"
           example: "Nice day at the beach."
           minLength: 1
           maxLength: 140
@@ -1173,7 +1173,7 @@ components:
         comment:
           description: "The comments itself"
           type: string
-          pattern: "x*"
+          pattern: ".{1,140}"
           example: "Looks nice!"
           minLength: 1
           maxLength: 140

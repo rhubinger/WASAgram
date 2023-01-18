@@ -12,6 +12,11 @@ export default {
 	methods: {
 		async changeUsername() {
             let newUsername = document.getElementById("newName").value;
+			let pattern = /[a-zA-z0-9-. ]{1,30}/;
+			if(!pattern.test(newUsername)){
+				alert("The username must follow the pattern: " + pattern + "!");
+				return;
+			}
 			try {
 				let post = await this.$axios.put("/users/" + store.userId + "/username", {
                     name: newUsername,

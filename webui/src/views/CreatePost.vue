@@ -12,8 +12,24 @@ export default {
 		async post() {
 			var formdata = new FormData();
 			var picture = document.getElementById("picture").files[0];
+			if(picture == null){
+				alert("You must upload a picture!");
+				return;
+			}
+			let name = document.getElementById("picture").value;
+			let extension = name.substr(name.lastIndexOf(".") + 1, name.length).toLowerCase();
+			if(extension != "png"){
+				alert("All uploaded pictures must be PNG's!");
+				return;
+			}
 			formdata.append("image", picture);
+
 			var caption = document.getElementById("caption").value;
+			let pattern = /.{1,140}/;
+			if(!pattern.test(caption)){
+				alert("All captions must follow the pattern " + pattern + "!");
+				return;
+			}
 			var metadata = {
 					postId: null,
 					userId: store.userId,
@@ -51,7 +67,7 @@ export default {
 
 	<form id="postForm" onsubmit="return false">
 		<label for="picture">Select a picture:</label>
-		<input type="file" id="picture" name="picture" /><br>
+		<input type="file" id="picture" name="picture" accept="image/png" /><br>
 		<label for="caption">Caption:</label>
         <input type="text" id="caption" name="caption" value="Nice day at the beach."><br>
         <input type="submit" value="Post" @click="post">
