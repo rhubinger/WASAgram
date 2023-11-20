@@ -1,6 +1,6 @@
 # WASAgram
 
-This repository contains the code of the WASAgram webapp. The application allows users to share images much like Instagram. The WASAgram webapp was created as part of the Web And Software Architecture course (WASA) at Sapienza Università di Roma. This repository is based on the [Fantastic coffee (decaffeinated)](https://github.com/sapienzaapps/fantastic-coffee-decaffeinated).
+This repository contains the code of the WASAgram webapp. The application allows users to share images much like Instagram. The WASAgram webapp was created as part of the Web And Software Architecture course (WASA) course at Sapienza Università di Roma. This repository is based on the [Fantastic coffee (decaffeinated)](https://github.com/sapienzaapps/fantastic-coffee-decaffeinated).
 
 ## Functional design specifications 
 
